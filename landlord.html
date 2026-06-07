@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>계약서 관리 - 집주인</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
+  <style>
+    * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { background: #F5F6F8; }
+    .card { background: white; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04); }
+    .btn-primary { background: #3182F6; color: white; border-radius: 14px; font-weight: 600; transition: all .15s; }
+    .btn-primary:hover { background: #1B6EE0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(49,130,246,.35); }
+    .btn-secondary { background: #F2F4F6; color: #191F28; border-radius: 14px; font-weight: 600; transition: all .15s; }
+    .btn-secondary:hover { background: #E8EAED; }
+    .btn-danger { background: #FFF0F0; color: #EF4444; border-radius: 14px; font-weight: 600; transition: all .15s; }
+    .input-field { border: 1.5px solid #E8EAED; border-radius: 12px; padding: 14px 16px; width: 100%; font-size: 15px; outline: none; transition: border-color .15s; background: white; }
+    .input-field:focus { border-color: #3182F6; box-shadow: 0 0 0 3px rgba(49,130,246,.12); }
+    .input-label { font-size: 13px; font-weight: 600; color: #8B95A1; margin-bottom: 6px; display: block; }
+    .tag-green { background: #EAFAF4; color: #00B493; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .tag-yellow { background: #FFF9E6; color: #F59E0B; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .tag-red { background: #FFF0F0; color: #EF4444; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .tag-blue { background: #EFF6FF; color: #3182F6; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #F2F4F6; }
+    .info-row:last-child { border-bottom: none; }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .contract-item { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1.5px solid #F2F4F6; cursor: pointer; transition: all .15s; }
+    .contract-item:hover { border-color: #3182F6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(49,130,246,.1); }
+    .progress-bar-fill { height: 6px; background: #3182F6; border-radius: 3px; transition: width .5s ease; }
+    .step-nav { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 4px; scrollbar-width: none; }
+    .step-nav::-webkit-scrollbar { display: none; }
+    .step-btn { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; }
+    .step-btn.active { background: #3182F6; color: white; }
+    .step-btn.done { background: #EAFAF4; color: #00B493; }
+    .step-btn.inactive { background: #F2F4F6; color: #8B95A1; }
+    .ai-feedback { margin-top: 8px; padding: 10px 12px; border-radius: 10px; font-size: 12px; line-height: 1.6; }
+    .ai-feedback.green { background: #F0FFF9; border: 1px solid #C8F5EB; color: #00705A; }
+    .ai-feedback.yellow { background: #FFFDF0; border: 1px solid #FFE9A0; color: #92650A; }
+    .ai-feedback.red { background: #FFF8F8; border: 1px solid #FFD0D0; color: #B91C1C; }
+    .clause-input-row { background: #F9FAFB; border-radius: 12px; padding: 12px; margin-bottom: 8px; border: 1.5px solid #F2F4F6; }
+    .link-box { background: #EFF6FF; border: 1.5px dashed #93C5FD; border-radius: 14px; padding: 14px; font-family: monospace; font-size: 13px; color: #1D4ED8; word-break: break-all; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- 헤더 -->
+  <div class="sticky top-0 z-50 bg-white border-b border-gray-100">
+    <div class="max-w-[430px] mx-auto px-5 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+            <span class="text-white text-xs font-bold">집</span>
+          </div>
+          <span class="text-base font-bold text-gray-900">찜완</span>
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">집주인</span>
+        </div>
+        <button onclick="goTo('dashboard')" class="text-xs text-gray-400 font-medium hover:text-blue-500 transition-colors">대시보드</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-[430px] mx-auto px-5 pb-32 pt-5" id="mainContent">
+
+    <!-- ========== DASHBOARD ========== -->
+    <div class="screen active" id="screen-dashboard">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">내 계약 목록</h2>
+          <p class="text-sm text-gray-400">김대한님, 안녕하세요</p>
+        </div>
+        <button onclick="goTo('new-contract')" class="btn-primary px-4 py-2.5 text-sm flex items-center gap-1.5">
+          <span>+</span> 새 계약
+        </button>
+      </div>
+
+      <!-- 통계 카드 -->
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <div class="card p-4 text-center">
+          <p class="text-2xl font-bold text-blue-600">2</p>
+          <p class="text-xs text-gray-400 mt-1">진행 중</p>
+        </div>
+        <div class="card p-4 text-center">
+          <p class="text-2xl font-bold text-green-500">5</p>
+          <p class="text-xs text-gray-400 mt-1">완료</p>
+        </div>
+        <div class="card p-4 text-center">
+          <p class="text-2xl font-bold text-amber-500">1</p>
+          <p class="text-xs text-gray-400 mt-1">서명 대기</p>
+        </div>
+      </div>
+
+      <!-- 진행 중 계약 -->
+      <p class="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide">진행 중인 계약</p>
+
+      <div class="contract-item" onclick="goTo('contract-detail')">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sm font-bold text-gray-900">마포구 서교동 123-45</span>
+              <span class="tag-yellow">🟡 서명 대기</span>
+            </div>
+            <p class="text-xs text-gray-400">302호 / Chen Zhiwei</p>
+          </div>
+          <span class="text-xs text-gray-300">›</span>
+        </div>
+        <div class="mb-2">
+          <div class="flex justify-between text-xs text-gray-400 mb-1.5">
+            <span>계약 진행률</span>
+            <span class="font-semibold text-blue-600">75%</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5">
+            <div class="progress-bar-fill rounded-full" style="width:75%"></div>
+          </div>
+        </div>
+        <div class="flex gap-2 text-xs text-gray-400">
+          <span>보증금 5,000만</span>
+          <span>·</span>
+          <span>월 50만</span>
+          <span>·</span>
+          <span>계약일 2024.03.15</span>
+        </div>
+      </div>
+
+      <div class="contract-item" onclick="goTo('contract-detail')">
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sm font-bold text-gray-900">성동구 성수동 45-78</span>
+              <span class="tag-blue">🔵 작성 중</span>
+            </div>
+            <p class="text-xs text-gray-400">101호 / Nguyen Van An</p>
+          </div>
+          <span class="text-xs text-gray-300">›</span>
+        </div>
+        <div class="mb-2">
+          <div class="flex justify-between text-xs text-gray-400 mb-1.5">
+            <span>계약 진행률</span>
+            <span class="font-semibold text-blue-600">40%</span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5">
+            <div class="progress-bar-fill rounded-full" style="width:40%"></div>
+          </div>
+        </div>
+        <div class="flex gap-2 text-xs text-gray-400">
+          <span>보증금 3,000만</span>
+          <span>·</span>
+          <span>월 70만</span>
+          <span>·</span>
+          <span>계약일 미정</span>
+        </div>
+      </div>
+
+      <p class="text-sm font-bold text-gray-500 mb-3 uppercase tracking-wide mt-5">완료된 계약</p>
+      <div class="contract-item opacity-60">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sm font-bold text-gray-900">마포구 합정동 89-12</span>
+              <span class="tag-green">✓ 완료</span>
+            </div>
+            <p class="text-xs text-gray-400">201호 / Zhang Wei · 2023.06.01 ~ 2025.05.31</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== 새 계약 생성 ========== -->
+    <div class="screen" id="screen-new-contract">
+      <!-- 단계 네비게이션 -->
+      <div class="step-nav mb-5">
+        <div id="nav1" class="step-btn active">① 매물 정보</div>
+        <div id="nav2" class="step-btn inactive">② 금액 조건</div>
+        <div id="nav3" class="step-btn inactive">③ 특약조항</div>
+        <div id="nav4" class="step-btn inactive">④ 초대 링크</div>
+      </div>
+
+      <!-- SUB STEP 1: 매물 정보 -->
+      <div id="sub1" class="sub-screen">
+        <div class="mb-5">
+          <h2 class="text-xl font-bold text-gray-900 mb-1">매물 정보 입력</h2>
+          <p class="text-sm text-gray-400">임차인에게 보여질 정보입니다.</p>
+        </div>
+        <div class="card p-5 mb-4">
+          <div class="mb-4">
+            <label class="input-label">도로명 주소</label>
+            <input type="text" class="input-field" placeholder="예: 서울특별시 마포구 독막로 ..." />
+          </div>
+          <div class="mb-4">
+            <label class="input-label">상세 주소 (동/호수)</label>
+            <input type="text" class="input-field" placeholder="예: 302호" />
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="input-label">주택 유형</label>
+              <select class="input-field">
+                <option>원룸</option>
+                <option>투룸</option>
+                <option>오피스텔</option>
+                <option>아파트</option>
+                <option>빌라</option>
+              </select>
+            </div>
+            <div>
+              <label class="input-label">전용면적</label>
+              <input type="text" class="input-field" placeholder="33㎡" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="input-label">해당 층</label>
+              <input type="number" class="input-field" placeholder="3" />
+            </div>
+            <div>
+              <label class="input-label">건물 전체 층</label>
+              <input type="number" class="input-field" placeholder="5" />
+            </div>
+          </div>
+          <div>
+            <label class="input-label">계약 유형</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button class="py-3 text-sm rounded-xl border-2 border-blue-500 text-blue-600 font-semibold bg-blue-50" id="typeMonthly">월세</button>
+              <button class="py-3 text-sm rounded-xl border-2 border-gray-200 text-gray-400 font-semibold" id="typeJeonse">전세</button>
+              <button class="py-3 text-sm rounded-xl border-2 border-gray-200 text-gray-400 font-semibold" id="typeShort">단기</button>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="goTo('dashboard')" class="btn-secondary flex-1 py-4 text-sm">취소</button>
+          <button onclick="showSubStep(2)" class="btn-primary py-4 text-base" style="flex:2">다음</button>
+        </div>
+      </div>
+
+      <!-- SUB STEP 2: 금액 조건 -->
+      <div id="sub2" class="sub-screen" style="display:none">
+        <div class="mb-5">
+          <h2 class="text-xl font-bold text-gray-900 mb-1">금액 조건 입력</h2>
+          <p class="text-sm text-gray-400">정확하게 입력해 주세요. 계약서에 그대로 반영됩니다.</p>
+        </div>
+        <div class="card p-5 mb-4">
+          <div class="mb-4">
+            <label class="input-label">보증금</label>
+            <div class="relative">
+              <input type="text" class="input-field pr-12" placeholder="50,000,000" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">원</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">예: 5000만원 → 50,000,000</p>
+          </div>
+          <div class="mb-4">
+            <label class="input-label">월세</label>
+            <div class="relative">
+              <input type="text" class="input-field pr-12" placeholder="500,000" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">원</span>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="input-label">관리비</label>
+            <div class="relative">
+              <input type="text" class="input-field pr-12" placeholder="50,000" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">원</span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1.5">관리비에 포함된 항목을 선택하세요</p>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button class="text-xs px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 bg-blue-50 font-medium">인터넷</button>
+              <button class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 font-medium">TV</button>
+              <button class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 font-medium">청소</button>
+              <button class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 font-medium">경비</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="input-label">계약 시작일</label>
+              <input type="date" class="input-field" />
+            </div>
+            <div>
+              <label class="input-label">계약 종료일</label>
+              <input type="date" class="input-field" />
+            </div>
+          </div>
+          <div>
+            <label class="input-label">월세 납부일</label>
+            <select class="input-field">
+              <option>매월 1일</option>
+              <option>매월 5일</option>
+              <option>매월 10일</option>
+              <option>매월 15일</option>
+              <option>매월 25일</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="showSubStep(1)" class="btn-secondary flex-1 py-4 text-sm">이전</button>
+          <button onclick="showSubStep(3)" class="btn-primary py-4 text-base" style="flex:2">다음</button>
+        </div>
+      </div>
+
+      <!-- SUB STEP 3: 특약조항 입력 -->
+      <div id="sub3" class="sub-screen" style="display:none">
+        <div class="mb-5">
+          <h2 class="text-xl font-bold text-gray-900 mb-1">특약조항 입력</h2>
+          <p class="text-sm text-gray-400">입력 즉시 AI가 임차인 관점에서 분석합니다.</p>
+        </div>
+
+        <!-- 이미 입력된 특약 -->
+        <div class="card p-5 mb-4">
+          <p class="text-sm font-bold text-gray-700 mb-3">입력된 특약 (3개)</p>
+
+          <div class="clause-input-row">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-gray-500">특약 1</span>
+              <button class="text-xs text-red-400 font-medium">삭제</button>
+            </div>
+            <p class="text-sm text-gray-800">"임대인이 필요 시 계약을 해지할 수 있다."</p>
+            <div class="ai-feedback red mt-2">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs">🔴</span>
+                <span class="font-bold text-xs">AI: 검토 권장</span>
+              </div>
+              임차인에게 불리한 조항입니다. 해지 조건을 구체적으로 명시하지 않으면 임차인이 이의를 제기할 수 있습니다.
+            </div>
+          </div>
+
+          <div class="clause-input-row">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-gray-500">특약 2</span>
+              <button class="text-xs text-red-400 font-medium">삭제</button>
+            </div>
+            <p class="text-sm text-gray-800">"반려동물 사육을 금지한다."</p>
+            <div class="ai-feedback yellow mt-2">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs">🟡</span>
+                <span class="font-bold text-xs">AI: 확인 필요</span>
+              </div>
+              일반적인 조항이지만 위반 시 패널티를 명시하면 분쟁 방지에 도움이 됩니다.
+            </div>
+          </div>
+
+          <div class="clause-input-row">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-gray-500">특약 3</span>
+              <button class="text-xs text-red-400 font-medium">삭제</button>
+            </div>
+            <p class="text-sm text-gray-800">"임차인은 퇴실 시 원상복구 의무가 있다."</p>
+            <div class="ai-feedback green mt-2">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-xs">🟢</span>
+                <span class="font-bold text-xs">AI: 일반 조항</span>
+              </div>
+              표준적인 조항입니다. 문제없이 사용 가능합니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- 새 특약 추가 -->
+        <div class="card p-5 mb-4">
+          <label class="input-label">새 특약 추가</label>
+          <textarea id="newClause" class="input-field" rows="3" placeholder="예: 임차인은 흡연을 금지한다." style="resize:none"></textarea>
+          <div id="aiPreview" class="mt-2 hidden"></div>
+          <button onclick="analyzeClause()" class="btn-secondary w-full py-3 text-sm mt-3">AI 분석 + 추가</button>
+        </div>
+
+        <div class="card p-4 mb-4 bg-blue-50">
+          <p class="text-xs font-bold text-blue-700 mb-2">추천 특약 템플릿</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="addTemplate(this)" class="text-xs px-3 py-1.5 bg-white rounded-lg border border-blue-200 text-blue-600 font-medium" data-text="임차인은 임대인의 동의 없이 전대차를 할 수 없다.">전대차 금지</button>
+            <button onclick="addTemplate(this)" class="text-xs px-3 py-1.5 bg-white rounded-lg border border-blue-200 text-blue-600 font-medium" data-text="임차인은 명도 시 원상복구 의무를 진다.">원상복구</button>
+            <button onclick="addTemplate(this)" class="text-xs px-3 py-1.5 bg-white rounded-lg border border-blue-200 text-blue-600 font-medium" data-text="외부 인테리어 변경 시 임대인 동의가 필요하다.">인테리어 제한</button>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button onclick="showSubStep(2)" class="btn-secondary flex-1 py-4 text-sm">이전</button>
+          <button onclick="showSubStep(4)" class="btn-primary py-4 text-base" style="flex:2">임차인 초대하기</button>
+        </div>
+      </div>
+
+      <!-- SUB STEP 4: 초대 링크 생성 -->
+      <div id="sub4" class="sub-screen" style="display:none">
+        <div class="mb-5">
+          <h2 class="text-xl font-bold text-gray-900 mb-1">임차인 초대하기</h2>
+          <p class="text-sm text-gray-400">아래 링크를 임차인에게 공유하세요.</p>
+        </div>
+
+        <div class="card p-5 mb-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center text-xl">✅</div>
+            <div>
+              <p class="text-sm font-bold text-gray-900">계약서 초안 완성!</p>
+              <p class="text-xs text-gray-400">임차인 서명만 남았어요</p>
+            </div>
+          </div>
+          <div class="mb-4">
+            <p class="text-xs font-bold text-gray-500 mb-2">초대 링크</p>
+            <div class="link-box mb-2">https://zzimwan.app/contract/ABC-2024-0312</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="copyLink()" class="btn-secondary py-3 text-sm">링크 복사</button>
+              <button onclick="shareKakao()" class="py-3 text-sm rounded-xl font-semibold text-yellow-800 transition-all" style="background:#FEE500;">카카오 공유</button>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs font-bold text-gray-600 mb-2">링크 설정</p>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-gray-500">링크 유효기간</span>
+              <select class="text-xs border border-gray-200 rounded-lg px-2 py-1">
+                <option>7일</option>
+                <option>14일</option>
+                <option>30일</option>
+              </select>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-gray-500">접근 비밀번호</span>
+              <button class="text-xs text-blue-500 font-medium">설정 추가</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-5 mb-4">
+          <p class="text-sm font-bold text-gray-900 mb-3">임차인 직접 입력 (선택)</p>
+          <div class="mb-3">
+            <label class="input-label">임차인 이름</label>
+            <input type="text" class="input-field" placeholder="이름을 입력하면 계약서에 미리 표시됩니다" />
+          </div>
+          <div>
+            <label class="input-label">연락처</label>
+            <input type="tel" class="input-field" placeholder="010-0000-0000" />
+          </div>
+        </div>
+
+        <button onclick="goTo('contract-detail')" class="btn-primary w-full py-4 text-base mb-3">계약 현황 확인하기</button>
+        <button onclick="goTo('dashboard')" class="btn-secondary w-full py-4 text-sm">대시보드로 돌아가기</button>
+      </div>
+    </div>
+
+    <!-- ========== 계약 상세 / 공동작성 현황 ========== -->
+    <div class="screen" id="screen-contract-detail">
+      <div class="flex items-center gap-3 mb-5">
+        <button onclick="goTo('dashboard')" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm">←</button>
+        <div>
+          <h2 class="text-lg font-bold text-gray-900">계약 상세</h2>
+          <p class="text-xs text-gray-400">#ABC-2024-0312</p>
+        </div>
+        <span class="ml-auto tag-yellow">서명 대기</span>
+      </div>
+
+      <!-- 공동작성 진행현황 -->
+      <div class="card p-5 mb-4">
+        <p class="text-sm font-bold text-gray-900 mb-4">공동작성 현황</p>
+        <div class="relative pl-6">
+          <div class="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-100"></div>
+          <!-- 완료 항목들 -->
+          <div class="flex items-start gap-3 mb-4 relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-[9px]">✓</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900">매물 정보 입력</p>
+              <p class="text-xs text-gray-400">집주인 · 2024.03.12 14:22</p>
+            </div>
+            <span class="tag-green text-xs">완료</span>
+          </div>
+          <div class="flex items-start gap-3 mb-4 relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-[9px]">✓</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900">특약조항 입력</p>
+              <p class="text-xs text-gray-400">집주인 · 2024.03.12 14:35</p>
+            </div>
+            <span class="tag-green text-xs">완료</span>
+          </div>
+          <div class="flex items-start gap-3 mb-4 relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-[9px]">✓</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900">임차인 개인정보 입력</p>
+              <p class="text-xs text-gray-400">Chen Zhiwei · 2024.03.13 10:15</p>
+            </div>
+            <span class="tag-green text-xs">완료</span>
+          </div>
+          <div class="flex items-start gap-3 mb-4 relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+              <span class="text-white text-[9px]">✓</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900">임차인 계약 내용 확인</p>
+              <p class="text-xs text-gray-400">Chen Zhiwei · 2024.03.13 10:28</p>
+            </div>
+            <span class="tag-green text-xs">완료</span>
+          </div>
+          <!-- 진행 중 -->
+          <div class="flex items-start gap-3 mb-4 relative">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center">
+              <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900">임차인 서명</p>
+              <p class="text-xs text-gray-400">대기 중...</p>
+            </div>
+            <span class="tag-yellow text-xs">대기</span>
+          </div>
+          <!-- 미완료 -->
+          <div class="flex items-start gap-3 relative opacity-40">
+            <div class="absolute -left-6 top-0.5 w-4 h-4 bg-gray-200 rounded-full"></div>
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-700">집주인 서명 + PDF 생성</p>
+              <p class="text-xs text-gray-400">임차인 서명 후 가능</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 계약 요약 -->
+      <div class="card p-5 mb-4">
+        <p class="text-sm font-bold text-gray-900 mb-3">계약 정보</p>
+        <div class="info-row">
+          <span class="text-xs text-gray-500">주소</span>
+          <span class="text-xs font-semibold text-gray-900">마포구 서교동 123-45, 302호</span>
+        </div>
+        <div class="info-row">
+          <span class="text-xs text-gray-500">임차인</span>
+          <span class="text-xs font-semibold text-gray-900">Chen Zhiwei (중국)</span>
+        </div>
+        <div class="info-row">
+          <span class="text-xs text-gray-500">보증금 / 월세</span>
+          <span class="text-xs font-semibold text-gray-900">5,000만 / 50만원</span>
+        </div>
+        <div class="info-row">
+          <span class="text-xs text-gray-500">계약기간</span>
+          <span class="text-xs font-semibold text-gray-900">2024.04.01 ~ 2026.03.31</span>
+        </div>
+        <div class="info-row">
+          <span class="text-xs text-gray-500">특약</span>
+          <span class="text-xs font-semibold text-gray-900">3개 (🔴1 🟡1 🟢1)</span>
+        </div>
+      </div>
+
+      <!-- 알림 설정 -->
+      <div class="card p-4 mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-bold text-gray-900">서명 알림 받기</p>
+            <p class="text-xs text-gray-400 mt-0.5">임차인이 서명하면 바로 알림</p>
+          </div>
+          <div class="w-11 h-6 bg-blue-500 rounded-full relative cursor-pointer">
+            <div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 최종 서명 버튼 (비활성) -->
+      <div class="card p-5 mb-4 opacity-60">
+        <p class="text-sm font-bold text-gray-900 mb-2">집주인 서명 + PDF 생성</p>
+        <p class="text-xs text-gray-400 mb-3">임차인 서명 완료 후 활성화됩니다</p>
+        <button disabled class="btn-primary w-full py-4 text-sm opacity-50 cursor-not-allowed">임차인 서명 대기 중...</button>
+      </div>
+
+      <!-- 활성화 상태 미리보기 (집주인 서명 화면) -->
+      <div class="card p-5 mb-4 border-2 border-blue-100 bg-blue-50">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-blue-500 font-bold text-sm">✅ 임차인 서명 완료 시</span>
+        </div>
+        <p class="text-xs text-gray-600 mb-3">집주인이 서명하면 계약이 최종 완료됩니다. 아래는 서명 화면 미리보기입니다.</p>
+        <div class="bg-white rounded-xl p-4 mb-3">
+          <p class="text-xs font-bold text-gray-700 mb-2">전자서명</p>
+          <div class="border-2 border-dashed border-gray-200 rounded-xl h-16 flex items-center justify-center">
+            <span class="text-xs text-gray-300">여기에 서명</span>
+          </div>
+        </div>
+        <button onclick="goTo('sign-complete')" class="btn-primary w-full py-3 text-sm">지금 바로 서명하기 (데모)</button>
+      </div>
+
+      <div class="flex gap-3">
+        <button class="btn-secondary flex-1 py-4 text-sm">계약서 수정</button>
+        <button class="btn-danger flex-1 py-4 text-sm">계약 취소</button>
+      </div>
+    </div>
+
+    <!-- ========== 서명 완료 + PDF ========== -->
+    <div class="screen" id="screen-sign-complete">
+      <div class="flex flex-col items-center text-center mb-8">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mb-4 mt-4">🎉</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">계약 완료!</h2>
+        <p class="text-sm text-gray-400">양측 서명이 완료되었습니다.</p>
+      </div>
+
+      <div class="card p-5 mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-bold text-gray-900">서명 완료 확인</p>
+          <span class="tag-green">✓ 완료</span>
+        </div>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">🏠</div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">임대인 김대한</p>
+            <p class="text-xs text-gray-400">2024.03.14 11:42 서명</p>
+          </div>
+          <span class="ml-auto tag-green">서명 완료</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">👤</div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">임차인 Chen Zhiwei</p>
+            <p class="text-xs text-gray-400">2024.03.13 10:45 서명</p>
+          </div>
+          <span class="ml-auto tag-green">서명 완료</span>
+        </div>
+      </div>
+
+      <div class="card p-5 mb-4">
+        <p class="text-sm font-bold text-gray-900 mb-3">계약서 다운로드</p>
+        <div class="bg-gray-50 rounded-xl p-4 flex items-center gap-3 mb-3">
+          <div class="w-10 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+            <span class="text-red-500 text-xs font-bold">PDF</span>
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-gray-900">계약서_마포서교동_2024.pdf</p>
+            <p class="text-xs text-gray-400">전자서명 포함 · 법적 효력 있음</p>
+          </div>
+          <button class="text-blue-500 text-sm font-bold">다운</button>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn-secondary py-3 text-sm">임차인에게 전송</button>
+          <button class="btn-primary py-3 text-sm">PDF 다운로드</button>
+        </div>
+      </div>
+
+      <button onclick="goTo('dashboard')" class="btn-secondary w-full py-4 text-sm">대시보드로 돌아가기</button>
+    </div>
+
+  </div>
+
+  <!-- 하단 탭 바 -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 max-w-[430px] mx-auto">
+    <div class="grid grid-cols-3 py-3">
+      <button onclick="goTo('dashboard')" class="flex flex-col items-center gap-1 text-blue-500">
+        <span class="text-lg">🏠</span>
+        <span class="text-[10px] font-semibold">대시보드</span>
+      </button>
+      <button onclick="goTo('new-contract')" class="flex flex-col items-center gap-1 text-gray-400">
+        <span class="text-lg">➕</span>
+        <span class="text-[10px] font-semibold">새 계약</span>
+      </button>
+      <button class="flex flex-col items-center gap-1 text-gray-400">
+        <span class="text-lg">👤</span>
+        <span class="text-[10px] font-semibold">내 정보</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const screens = ['dashboard', 'new-contract', 'contract-detail', 'sign-complete'];
+    let currentSubStep = 1;
+
+    function goTo(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + screenId).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (screenId === 'new-contract') showSubStep(1);
+    }
+
+    function showSubStep(n) {
+      currentSubStep = n;
+      document.querySelectorAll('.sub-screen').forEach(s => s.style.display = 'none');
+      document.getElementById('sub' + n).style.display = 'block';
+      const navBtns = ['nav1','nav2','nav3','nav4'];
+      navBtns.forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.className = 'step-btn ' + (i + 1 < n ? 'done' : i + 1 === n ? 'active' : 'inactive');
+      });
+    }
+
+    function analyzeClause() {
+      const text = document.getElementById('newClause').value.trim();
+      if (!text) return;
+      const preview = document.getElementById('aiPreview');
+      preview.className = 'ai-feedback yellow mt-2';
+      preview.classList.remove('hidden');
+      preview.innerHTML = `<div class="flex items-center gap-1.5 mb-1"><span>🟡</span><span class="font-bold text-xs">AI 분석 중...</span></div>조항을 분석하고 있어요.`;
+      setTimeout(() => {
+        preview.className = 'ai-feedback green mt-2';
+        preview.innerHTML = `<div class="flex items-center gap-1.5 mb-1"><span>🟢</span><span class="font-bold text-xs">AI: 일반 조항</span></div>표준적인 조항입니다. 문제없이 사용할 수 있습니다.`;
+      }, 1200);
+    }
+
+    function addTemplate(btn) {
+      document.getElementById('newClause').value = btn.getAttribute('data-text');
+    }
+
+    function copyLink() {
+      navigator.clipboard.writeText('https://zzimwan.app/contract/ABC-2024-0312').then(() => {
+        alert('링크가 복사되었습니다!');
+      }).catch(() => {
+        alert('링크: https://zzimwan.app/contract/ABC-2024-0312');
+      });
+    }
+
+    function shareKakao() {
+      alert('카카오톡 공유 기능은 실제 앱 연동 시 활성화됩니다.');
+    }
+
+    // 계약 유형 버튼
+    document.addEventListener('DOMContentLoaded', () => {
+      ['typeMonthly', 'typeJeonse', 'typeShort'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', () => {
+          ['typeMonthly', 'typeJeonse', 'typeShort'].forEach(i => {
+            const b = document.getElementById(i);
+            if (b) { b.className = 'py-3 text-sm rounded-xl border-2 border-gray-200 text-gray-400 font-semibold'; }
+          });
+          el.className = 'py-3 text-sm rounded-xl border-2 border-blue-500 text-blue-600 font-semibold bg-blue-50';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
