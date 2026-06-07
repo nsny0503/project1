@@ -2,619 +2,512 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Insure! - 계약서 작성</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
   <style>
-    * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif; }
-    body { background: #F5F6F8; }
-    .step-line { transition: width 0.4s cubic-bezier(.4,0,.2,1); }
-    .card { background: white; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04); }
-    .btn-primary { background: #3182F6; color: white; border-radius: 14px; font-weight: 600; transition: all .15s; }
-    .btn-primary:hover { background: #1B6EE0; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(49,130,246,.35); }
-    .btn-secondary { background: #F2F4F6; color: #191F28; border-radius: 14px; font-weight: 600; transition: all .15s; }
-    .btn-secondary:hover { background: #E8EAED; }
-    .input-field { border: 1.5px solid #E8EAED; border-radius: 12px; padding: 14px 16px; width: 100%; font-size: 15px; outline: none; transition: border-color .15s; background: white; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; overflow-x: hidden; width: 100%; }
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F6F8; -webkit-text-size-adjust: 100%; }
+
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 2px 12px rgba(0,0,0,.04); }
+    .btn-primary { display: block; width: 100%; background: #3182F6; color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 700; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .btn-primary:active { background: #1B6EE0; }
+    .btn-secondary { display: block; width: 100%; background: #F2F4F6; color: #191F28; border: none; border-radius: 14px; padding: 16px; font-size: 15px; font-weight: 600; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .btn-secondary:active { background: #E4E7EA; }
+    .btn-row { display: flex; gap: 10px; }
+    .btn-row .btn-secondary { flex: 1; }
+    .btn-row .btn-primary { flex: 2; }
+
+    .input-wrap { margin-bottom: 18px; }
+    .input-label { display: block; font-size: 13px; font-weight: 600; color: #8B95A1; margin-bottom: 7px; }
+    .input-field { display: block; width: 100%; border: 1.5px solid #E8EAED; border-radius: 12px; padding: 14px 16px; font-size: 16px; font-family: inherit; outline: none; background: #fff; color: #191F28; -webkit-appearance: none; }
     .input-field:focus { border-color: #3182F6; box-shadow: 0 0 0 3px rgba(49,130,246,.12); }
-    .input-label { font-size: 13px; font-weight: 600; color: #8B95A1; margin-bottom: 6px; display: block; }
-    .tag-green { background: #EAFAF4; color: #00B493; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
-    .tag-yellow { background: #FFF9E6; color: #F59E0B; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
-    .tag-red { background: #FFF0F0; color: #EF4444; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
-    .clause-card { border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1.5px solid; }
-    .clause-green { background: #F8FFFE; border-color: #C8F5EB; }
-    .clause-yellow { background: #FFFDF0; border-color: #FFE9A0; }
-    .clause-red { background: #FFF8F8; border-color: #FFD0D0; }
-    .progress-step { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; transition: all .3s; }
-    .step-active { background: #3182F6; color: white; }
-    .step-done { background: #00B493; color: white; }
-    .step-inactive { background: #E8EAED; color: #8B95A1; }
-    .screen { display: none; }
-    .screen.active { display: block; animation: fadeIn .25s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #F2F4F6; }
+    select.input-field { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B95A1' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+
+    .tag { display: inline-block; border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .tag-green { background: #EAFAF4; color: #00A37A; }
+    .tag-yellow { background: #FFF9E6; color: #D48806; }
+    .tag-red { background: #FFF0F0; color: #E03131; }
+    .tag-blue { background: #EFF6FF; color: #1971C2; }
+
+    .info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 13px 0; border-bottom: 1px solid #F2F4F6; }
     .info-row:last-child { border-bottom: none; }
-    .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-    .check-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F2F4F6; }
-    .check-item:last-child { border-bottom: none; }
+    .info-label { font-size: 14px; color: #6B7684; flex-shrink: 0; }
+    .info-value { font-size: 14px; font-weight: 600; color: #191F28; text-align: right; }
+
+    .progress-step { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; transition: background .3s, color .3s; }
+    .step-done  { background: #00B493; color: #fff; }
+    .step-active { background: #3182F6; color: #fff; }
+    .step-inactive { background: #E8EAED; color: #8B95A1; }
+    .step-line { height: 2px; flex: 1; background: #E8EAED; overflow: hidden; }
+    .step-line-fill { height: 100%; background: #3182F6; transition: width .4s ease; }
+
+    .clause-card { border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1.5px solid; }
+    .clause-red    { background: #FFF8F8; border-color: #FFD0D0; }
+    .clause-yellow { background: #FFFDF0; border-color: #FFE9A0; }
+    .clause-green  { background: #F8FFFE; border-color: #C8F5EB; }
+    .ai-box { background: #fff; border-radius: 12px; padding: 12px; margin-top: 10px; }
+    .ai-box-red    { border: 1px solid #FFD0D0; }
+    .ai-box-yellow { border: 1px solid #FFE9A0; }
+    .ai-box-green  { border: 1px solid #C8F5EB; }
+    .ai-badge { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0; }
+
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .check-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F2F4F6; }
+    .check-row:last-child { border-bottom: none; }
+    .check-row input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; accent-color: #3182F6; cursor: pointer; }
+
+    .sign-pad-wrap { border: 1.5px dashed #D1D5DB; border-radius: 14px; background: #FAFAFA; position: relative; overflow: hidden; height: 130px; }
+    .sign-pad-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+    .sign-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+
+    .status-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
   </style>
 </head>
-<body class="min-h-screen">
+<body>
 
-  <!-- 상단 헤더 -->
-  <div class="sticky top-0 z-50 bg-white border-b border-gray-100">
-    <div class="max-w-[430px] mx-auto px-5 py-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
-            <span class="text-white text-xs font-bold">집</span>
-          </div>
-          <span class="text-base font-bold text-gray-900">Insure!</span>
-          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">임차인</span>
-        </div>
-        <div class="text-xs text-gray-400 font-medium">계약 #2024-0312</div>
+  <!-- ───── 헤더 ───── -->
+  <div style="position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #F2F4F6;">
+    <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;background:#3182F6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-weight:800;">I</div>
+        <span style="font-size:16px;font-weight:800;color:#191F28;">Insure!</span>
+        <span style="font-size:11px;color:#8B95A1;background:#F2F4F6;padding:2px 8px;border-radius:20px;font-weight:600;">임차인</span>
       </div>
+      <span style="font-size:12px;color:#8B95A1;font-weight:500;">#2024-0312</span>
     </div>
   </div>
 
-  <!-- 진행률 바 -->
-  <div class="sticky top-[57px] z-40 bg-white border-b border-gray-100">
-    <div class="max-w-[430px] mx-auto px-5 py-3">
-      <!-- 스텝 인디케이터 -->
-      <div class="flex items-center justify-between mb-2">
-        <div id="s1" class="progress-step step-done">✓</div>
-        <div class="flex-1 h-0.5 bg-gray-200 mx-1 relative overflow-hidden">
-          <div id="line1" class="h-full bg-blue-500 step-line" style="width:100%"></div>
-        </div>
-        <div id="s2" class="progress-step step-active">2</div>
-        <div class="flex-1 h-0.5 bg-gray-200 mx-1 relative overflow-hidden">
-          <div id="line2" class="h-full bg-blue-500 step-line" style="width:0%"></div>
-        </div>
-        <div id="s3" class="progress-step step-inactive">3</div>
-        <div class="flex-1 h-0.5 bg-gray-200 mx-1 relative overflow-hidden">
-          <div id="line3" class="h-full bg-blue-500 step-line" style="width:0%"></div>
-        </div>
-        <div id="s4" class="progress-step step-inactive">4</div>
-        <div class="flex-1 h-0.5 bg-gray-200 mx-1 relative overflow-hidden">
-          <div id="line4" class="h-full bg-blue-500 step-line" style="width:0%"></div>
-        </div>
-        <div id="s5" class="progress-step step-inactive">5</div>
-      </div>
-      <div class="flex justify-between text-[10px] text-gray-400 font-medium px-0.5">
-        <span>확인</span>
-        <span class="text-blue-500 font-bold">내 정보</span>
-        <span>조건</span>
-        <span>특약</span>
-        <span>서명</span>
-      </div>
+  <!-- ───── 진행 단계 바 ───── -->
+  <div style="position:sticky;top:57px;z-index:40;background:#fff;border-bottom:1px solid #F2F4F6;padding:12px 20px 10px;">
+    <div style="display:flex;align-items:center;margin-bottom:8px;">
+      <div id="s1" class="progress-step step-done">✓</div>
+      <div class="step-line"><div id="l1" class="step-line-fill" style="width:100%"></div></div>
+      <div id="s2" class="progress-step step-active">2</div>
+      <div class="step-line"><div id="l2" class="step-line-fill" style="width:0%"></div></div>
+      <div id="s3" class="progress-step step-inactive">3</div>
+      <div class="step-line"><div id="l3" class="step-line-fill" style="width:0%"></div></div>
+      <div id="s4" class="progress-step step-inactive">4</div>
+      <div class="step-line"><div id="l4" class="step-line-fill" style="width:0%"></div></div>
+      <div id="s5" class="progress-step step-inactive">5</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#8B95A1;font-weight:500;padding:0 2px;">
+      <span>확인</span><span id="stepLabel2" style="color:#3182F6;font-weight:700;">내 정보</span><span>조건</span><span>특약</span><span>서명</span>
     </div>
   </div>
 
-  <div class="max-w-[430px] mx-auto px-5 pb-32 pt-5" id="mainContent">
+  <!-- ───── 콘텐츠 ───── -->
+  <div style="padding:20px 20px 120px;" id="content">
 
-    <!-- SCREEN 1: 계약 확인 (완료 상태 - 이미 지나온 화면) -->
+    <!-- STEP 1 -->
     <div class="screen" id="screen1">
-      <div class="card p-5 mb-4">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-xl">🏠</div>
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div style="width:44px;height:44px;background:#EFF6FF;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;">🏠</div>
           <div>
-            <p class="text-xs text-gray-400 font-medium">새 계약 초대</p>
-            <p class="font-bold text-gray-900">계약서를 확인해 주세요</p>
+            <p style="font-size:12px;color:#8B95A1;margin:0 0 2px;">새 계약 초대</p>
+            <p style="font-size:16px;font-weight:700;color:#191F28;margin:0;">계약서를 확인해 주세요</p>
           </div>
         </div>
-        <div class="bg-blue-50 rounded-xl p-4 mb-4">
-          <p class="text-sm font-bold text-blue-700 mb-1">서울특별시 마포구 서교동 123-45</p>
-          <p class="text-xs text-blue-500">302호 원룸 / 전세</p>
+        <div style="background:#EFF6FF;border-radius:12px;padding:14px;margin-bottom:16px;">
+          <p style="font-size:14px;font-weight:700;color:#1D4ED8;margin:0 0 4px;">서울특별시 마포구 서교동 123-45</p>
+          <p style="font-size:12px;color:#3B82F6;margin:0;">302호 원룸 / 월세</p>
         </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">집주인</span>
-          <span class="text-sm font-semibold text-gray-900">김대한</span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">계약 유형</span>
-          <span class="text-sm font-semibold text-gray-900">전세 계약</span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">계약일</span>
-          <span class="text-sm font-semibold text-gray-900">2024년 3월 15일</span>
-        </div>
+        <div class="info-row"><span class="info-label">집주인</span><span class="info-value">김대한</span></div>
+        <div class="info-row"><span class="info-label">계약 유형</span><span class="info-value">월세 계약</span></div>
+        <div class="info-row"><span class="info-label">계약일</span><span class="info-value">2024년 3월 15일</span></div>
       </div>
-      <button onclick="goToScreen(2)" class="btn-primary w-full py-4 text-base">시작하기</button>
+      <button class="btn-primary" onclick="goTo(2)">시작하기</button>
     </div>
 
-    <!-- SCREEN 2: 내 정보 입력 -->
+    <!-- STEP 2 -->
     <div class="screen active" id="screen2">
-      <div class="mb-5">
-        <h2 class="text-xl font-bold text-gray-900 mb-1">내 정보를 입력해 주세요</h2>
-        <p class="text-sm text-gray-400">계약서에 등록될 정보입니다. 여권과 동일하게 입력해 주세요.</p>
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:800;color:#191F28;margin:0 0 6px;">내 정보를 입력해 주세요</h2>
+        <p style="font-size:14px;color:#8B95A1;margin:0;">계약서에 등록될 정보입니다. 여권과 동일하게 입력하세요.</p>
       </div>
-
-      <div class="card p-5 mb-4">
-        <div class="mb-4">
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div class="input-wrap">
           <label class="input-label">이름 (여권 기준)</label>
           <input type="text" class="input-field" placeholder="홍길동 / Hong Gil-dong" value="陳志偉 (Chen Zhiwei)" />
         </div>
-        <div class="mb-4">
+        <div class="input-wrap">
           <label class="input-label">국적</label>
           <select class="input-field">
-            <option value="cn" selected>중국 (China)</option>
-            <option value="us">미국 (USA)</option>
-            <option value="vn">베트남 (Vietnam)</option>
-            <option value="ph">필리핀 (Philippines)</option>
-            <option value="th">태국 (Thailand)</option>
-            <option value="other">기타 (Other)</option>
+            <option selected>중국 (China)</option>
+            <option>미국 (USA)</option>
+            <option>베트남 (Vietnam)</option>
+            <option>필리핀 (Philippines)</option>
+            <option>태국 (Thailand)</option>
+            <option>기타 (Other)</option>
           </select>
         </div>
-        <div class="mb-4">
+        <div class="input-wrap">
           <label class="input-label">등록 외국인번호 / 여권번호</label>
           <input type="text" class="input-field" placeholder="123456-1234567" value="F 234-8821-01" />
         </div>
-        <div class="mb-4">
+        <div class="input-wrap">
           <label class="input-label">연락처</label>
           <input type="tel" class="input-field" placeholder="010-0000-0000" value="010-1234-5678" />
         </div>
-        <div>
+        <div class="input-wrap" style="margin-bottom:0;">
           <label class="input-label">체류 자격</label>
           <select class="input-field">
-            <option value="d2" selected>D-2 (유학)</option>
-            <option value="e7">E-7 (특정활동)</option>
-            <option value="f2">F-2 (거주)</option>
-            <option value="f4">F-4 (재외동포)</option>
-            <option value="h2">H-2 (방문취업)</option>
+            <option selected>D-2 (유학)</option>
+            <option>E-7 (특정활동)</option>
+            <option>F-2 (거주)</option>
+            <option>F-4 (재외동포)</option>
+            <option>H-2 (방문취업)</option>
           </select>
         </div>
       </div>
-
-      <div class="card p-4 mb-4 bg-amber-50 border border-amber-100">
-        <div class="flex gap-3">
-          <span class="text-lg">💡</span>
+      <div class="card" style="padding:16px;margin-bottom:16px;background:#FFFBEB;border:1px solid #FEF3C7;">
+        <div style="display:flex;gap:10px;">
+          <span style="font-size:18px;flex-shrink:0;">💡</span>
           <div>
-            <p class="text-sm font-bold text-amber-800 mb-1">체류 자격이 중요한 이유</p>
-            <p class="text-xs text-amber-700 leading-relaxed">체류 자격에 따라 계약 가능 여부와 전입신고 방법이 달라집니다. 모르면 집주인이나 중개사에게 확인하세요.</p>
+            <p style="font-size:13px;font-weight:700;color:#92400E;margin:0 0 4px;">체류 자격이 중요한 이유</p>
+            <p style="font-size:12px;color:#B45309;margin:0;line-height:1.6;">체류 자격에 따라 계약 가능 여부와 전입신고 방법이 달라집니다.</p>
           </div>
         </div>
       </div>
-
-      <div class="flex gap-3">
-        <button onclick="goToScreen(1)" class="btn-secondary flex-1 py-4 text-sm">이전</button>
-        <button onclick="goToScreen(3)" class="btn-primary flex-2 py-4 text-base" style="flex:2">저장하고 다음</button>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goTo(1)">이전</button>
+        <button class="btn-primary" onclick="goTo(3)" style="flex:2;">저장하고 다음</button>
       </div>
     </div>
 
-    <!-- SCREEN 3: 계약 조건 확인 -->
+    <!-- STEP 3 -->
     <div class="screen" id="screen3">
-      <div class="mb-5">
-        <h2 class="text-xl font-bold text-gray-900 mb-1">계약 조건을 확인해 주세요</h2>
-        <p class="text-sm text-gray-400">집주인이 입력한 내용입니다. 틀린 내용이 있으면 집주인에게 문의하세요.</p>
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:800;color:#191F28;margin:0 0 6px;">계약 조건을 확인해 주세요</h2>
+        <p style="font-size:14px;color:#8B95A1;margin:0;">집주인이 입력한 내용입니다.</p>
       </div>
 
-      <!-- 매물 정보 -->
-      <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="text-base font-bold text-gray-900">📍 임차 주택 정보</span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">주소</span>
-          <span class="text-sm font-semibold text-gray-900 text-right">서울 마포구 서교동 123-45<br><span class="text-xs text-gray-400">302호</span></span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">주택 유형</span>
-          <span class="text-sm font-semibold text-gray-900">원룸 (33㎡)</span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">층수</span>
-          <span class="text-sm font-semibold text-gray-900">3층 / 5층</span>
-        </div>
+      <div class="card" style="padding:20px;margin-bottom:12px;">
+        <p style="font-size:15px;font-weight:700;color:#191F28;margin:0 0 12px;">📍 임차 주택 정보</p>
+        <div class="info-row"><span class="info-label">주소</span><span class="info-value">서울 마포구 서교동 123-45, 302호</span></div>
+        <div class="info-row"><span class="info-label">주택 유형</span><span class="info-value">원룸 (33㎡)</span></div>
+        <div class="info-row"><span class="info-label">층수</span><span class="info-value">3층 / 5층</span></div>
       </div>
 
-      <!-- 금액 정보 -->
-      <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="text-base font-bold text-gray-900">💰 금액 조건</span>
+      <div class="card" style="padding:20px;margin-bottom:12px;">
+        <p style="font-size:15px;font-weight:700;color:#191F28;margin:0 0 12px;">💰 금액 조건</p>
+        <div class="info-row">
+          <div><span class="info-label">보증금</span><p style="font-size:11px;color:#B0B8C1;margin:2px 0 0;">계약 시 납부하는 목돈</p></div>
+          <span style="font-size:18px;font-weight:800;color:#3182F6;">5,000만원</span>
         </div>
         <div class="info-row">
-          <div>
-            <span class="text-sm text-gray-500">보증금</span>
-            <p class="text-xs text-gray-400 mt-0.5">계약 시 납부하는 목돈</p>
-          </div>
-          <span class="text-lg font-bold text-blue-600">5,000만원</span>
+          <div><span class="info-label">월세</span><p style="font-size:11px;color:#B0B8C1;margin:2px 0 0;">매달 납부하는 금액</p></div>
+          <span style="font-size:18px;font-weight:800;color:#191F28;">50만원</span>
         </div>
         <div class="info-row">
-          <div>
-            <span class="text-sm text-gray-500">월세</span>
-            <p class="text-xs text-gray-400 mt-0.5">매달 납부하는 금액</p>
-          </div>
-          <span class="text-lg font-bold text-gray-900">50만원</span>
+          <div><span class="info-label">관리비</span><p style="font-size:11px;color:#B0B8C1;margin:2px 0 0;">건물 공용부분 유지비</p></div>
+          <span style="font-size:16px;font-weight:700;color:#191F28;">5만원</span>
         </div>
         <div class="info-row">
-          <div>
-            <span class="text-sm text-gray-500">관리비</span>
-            <p class="text-xs text-gray-400 mt-0.5">건물 공용부분 유지비</p>
-          </div>
-          <span class="text-base font-semibold text-gray-700">5만원</span>
+          <span class="info-label">계약 기간</span>
+          <div style="text-align:right;"><p style="font-size:14px;font-weight:600;color:#191F28;margin:0;">2024.04.01 ~ 2026.03.31</p><p style="font-size:11px;color:#8B95A1;margin:2px 0 0;">24개월 (2년)</p></div>
         </div>
-        <div class="info-row">
-          <div>
-            <span class="text-sm text-gray-500">계약 기간</span>
-          </div>
-          <div class="text-right">
-            <span class="text-sm font-semibold text-gray-900">2024.04.01 ~ 2026.03.31</span>
-            <p class="text-xs text-gray-400">24개월 (2년)</p>
-          </div>
-        </div>
-
-        <div class="mt-4 bg-blue-50 rounded-xl p-4">
-          <p class="text-xs font-bold text-blue-700 mb-2">월 총 납부액 계산</p>
-          <div class="flex justify-between text-sm">
-            <span class="text-blue-600">월세 50만원 + 관리비 5만원</span>
-            <span class="font-bold text-blue-700">= 55만원</span>
+        <div style="background:#EFF6FF;border-radius:12px;padding:14px;margin-top:12px;">
+          <p style="font-size:12px;font-weight:700;color:#1D4ED8;margin:0 0 6px;">월 총 납부액</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:13px;color:#3B82F6;">월세 50만 + 관리비 5만</span>
+            <span style="font-size:15px;font-weight:800;color:#1D4ED8;">= 55만원</span>
           </div>
         </div>
       </div>
 
-      <!-- 납부 방법 -->
-      <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="text-base font-bold text-gray-900">🏦 납부 정보</span>
+      <div class="card" style="padding:20px;margin-bottom:12px;">
+        <p style="font-size:15px;font-weight:700;color:#191F28;margin:0 0 12px;">📋 공동작성 현황</p>
+        <div class="status-row" style="border-bottom:1px solid #F2F4F6;padding-bottom:12px;margin-bottom:12px;">
+          <div class="avatar" style="background:#EFF6FF;">🏠</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:600;color:#191F28;margin:0;">집주인 (김대한)</p>
+            <p style="font-size:12px;color:#8B95A1;margin:2px 0 0;">매물 정보 입력 완료</p>
+          </div>
+          <span class="tag tag-green">✓ 완료</span>
         </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">납부 계좌</span>
-          <span class="text-sm font-semibold text-gray-900">국민은행 123-456-789012</span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">예금주</span>
-          <span class="text-sm font-semibold text-gray-900">김대한</span>
-        </div>
-        <div class="info-row">
-          <span class="text-sm text-gray-500">월세 납부일</span>
-          <span class="text-sm font-semibold text-gray-900">매월 5일</span>
+        <div class="status-row">
+          <div class="avatar" style="background:#FFF3E0;">👤</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:600;color:#191F28;margin:0;">임차인 (나)</p>
+            <p style="font-size:12px;color:#8B95A1;margin:2px 0 0;">개인정보 입력 완료</p>
+          </div>
+          <span class="tag tag-blue">진행 중</span>
         </div>
       </div>
 
-      <!-- 공동작성 현황 -->
-      <div class="card p-5 mb-4">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="text-base font-bold text-gray-900">📋 공동작성 현황</span>
-        </div>
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm">🏠</div>
-            <div>
-              <p class="text-sm font-semibold text-gray-900">집주인 (김대한)</p>
-              <p class="text-xs text-gray-400">매물 정보 입력 완료</p>
-            </div>
-          </div>
-          <span class="status-badge bg-green-50 text-green-600">✓ 완료</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-sm">👤</div>
-            <div>
-              <p class="text-sm font-semibold text-gray-900">임차인 (나)</p>
-              <p class="text-xs text-gray-400">개인정보 입력 완료</p>
-            </div>
-          </div>
-          <span class="status-badge bg-blue-50 text-blue-600">진행 중</span>
-        </div>
-      </div>
-
-      <div class="flex gap-3">
-        <button onclick="goToScreen(2)" class="btn-secondary flex-1 py-4 text-sm">이전</button>
-        <button onclick="goToScreen(4)" class="btn-primary py-4 text-base" style="flex:2">특약 확인하기</button>
+      <div class="btn-row" style="margin-top:4px;">
+        <button class="btn-secondary" onclick="goTo(2)">이전</button>
+        <button class="btn-primary" onclick="goTo(4)" style="flex:2;">특약 확인하기</button>
       </div>
     </div>
 
-    <!-- SCREEN 4: 특약조항 + AI 분석 -->
+    <!-- STEP 4 -->
     <div class="screen" id="screen4">
-      <div class="mb-5">
-        <h2 class="text-xl font-bold text-gray-900 mb-1">특약조항을 확인해 주세요</h2>
-        <p class="text-sm text-gray-400">AI가 각 조항을 분석했습니다. 위험 조항은 반드시 집주인과 협의하세요.</p>
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:800;color:#191F28;margin:0 0 6px;">특약조항을 확인해 주세요</h2>
+        <p style="font-size:14px;color:#8B95A1;margin:0;">AI가 각 조항을 분석했어요. 위험 조항은 집주인과 꼭 협의하세요.</p>
       </div>
 
-      <!-- 위험도 요약 배너 -->
-      <div class="card p-4 mb-4 border-2 border-red-100 bg-red-50">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl">⚠️</span>
-          <div class="flex-1">
-            <p class="text-sm font-bold text-red-700">검토 필요 조항이 있습니다</p>
-            <p class="text-xs text-red-500 mt-0.5">서명 전 집주인과 반드시 협의하세요</p>
+      <!-- 요약 배너 -->
+      <div class="card" style="padding:16px;margin-bottom:16px;border:2px solid #FFD0D0;background:#FFF8F8;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:24px;flex-shrink:0;">⚠️</span>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:700;color:#B91C1C;margin:0 0 2px;">검토 필요 조항이 있습니다</p>
+            <p style="font-size:12px;color:#EF4444;margin:0;">서명 전 집주인과 반드시 협의하세요</p>
           </div>
-          <div class="text-right">
-            <p class="text-xs text-gray-500">총 4개 조항</p>
-            <div class="flex gap-1 mt-1 justify-end">
-              <span class="tag-red">🔴 1</span>
-              <span class="tag-yellow">🟡 2</span>
-              <span class="tag-green">🟢 1</span>
+          <div style="text-align:right;flex-shrink:0;">
+            <p style="font-size:11px;color:#8B95A1;margin:0 0 4px;">총 4개 조항</p>
+            <div style="display:flex;gap:4px;justify-content:flex-end;">
+              <span class="tag tag-red" style="font-size:11px;">🔴 1</span>
+              <span class="tag tag-yellow" style="font-size:11px;">🟡 2</span>
+              <span class="tag tag-green" style="font-size:11px;">🟢 1</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 특약 1: 위험 -->
-      <div class="clause-card clause-red mb-3">
-        <div class="flex items-center justify-between mb-2">
-          <span class="tag-red">🔴 검토 권장</span>
-          <span class="text-xs text-gray-400">특약 1</span>
+      <!-- 특약 1 -->
+      <div class="clause-card clause-red">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span class="tag tag-red">🔴 검토 권장</span>
+          <span style="font-size:11px;color:#8B95A1;">특약 1</span>
         </div>
-        <p class="text-sm font-semibold text-gray-900 mb-3">"임대인이 필요 시 계약을 해지할 수 있다."</p>
-        <div class="bg-white rounded-xl p-3 border border-red-100">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-xs">AI</span>
-            </div>
-            <span class="text-xs font-bold text-red-600">AI 분석 결과</span>
+        <p style="font-size:14px;font-weight:600;color:#191F28;margin:0 0 10px;">"임대인이 필요 시 계약을 해지할 수 있다."</p>
+        <div class="ai-box ai-box-red">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div class="ai-badge" style="background:#EF4444;">AI</div>
+            <span style="font-size:12px;font-weight:700;color:#EF4444;">AI 분석 결과</span>
           </div>
-          <p class="text-xs text-gray-700 leading-relaxed">이 조항은 <strong>임차인에게 매우 불리</strong>합니다. 집주인이 언제든지 계약을 끝낼 수 있다는 의미입니다. 구체적인 해지 조건(예: "재개발 확정 시", "본인 입주 시")을 명시하도록 요청하세요.</p>
-          <button class="mt-3 w-full py-2 text-xs font-bold text-red-600 bg-red-50 rounded-lg border border-red-200">집주인에게 수정 요청하기</button>
+          <p style="font-size:12px;color:#4B5563;line-height:1.7;margin:0 0 10px;">이 조항은 <strong>임차인에게 매우 불리</strong>합니다. 집주인이 언제든지 계약을 끝낼 수 있어요. 구체적 해지 조건을 명시하도록 요청하세요.</p>
+          <button style="width:100%;padding:10px;background:#FFF0F0;border:1px solid #FECACA;border-radius:10px;font-size:13px;font-weight:700;color:#E03131;cursor:pointer;">집주인에게 수정 요청하기</button>
         </div>
       </div>
 
-      <!-- 특약 2: 확인 필요 -->
-      <div class="clause-card clause-yellow mb-3">
-        <div class="flex items-center justify-between mb-2">
-          <span class="tag-yellow">🟡 확인 필요</span>
-          <span class="text-xs text-gray-400">특약 2</span>
+      <!-- 특약 2 -->
+      <div class="clause-card clause-yellow">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span class="tag tag-yellow">🟡 확인 필요</span>
+          <span style="font-size:11px;color:#8B95A1;">특약 2</span>
         </div>
-        <p class="text-sm font-semibold text-gray-900 mb-3">"반려동물 사육을 금지한다."</p>
-        <div class="bg-white rounded-xl p-3 border border-yellow-100">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-              <span class="text-white text-xs">AI</span>
-            </div>
-            <span class="text-xs font-bold text-yellow-600">AI 분석 결과</span>
+        <p style="font-size:14px;font-weight:600;color:#191F28;margin:0 0 10px;">"반려동물 사육을 금지한다."</p>
+        <div class="ai-box ai-box-yellow">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div class="ai-badge" style="background:#F59E0B;">AI</div>
+            <span style="font-size:12px;font-weight:700;color:#D97706;">AI 분석 결과</span>
           </div>
-          <p class="text-xs text-gray-700 leading-relaxed">반려동물 금지 조항은 일반적이지만, <strong>위반 시 패널티</strong>가 없으면 분쟁이 생길 수 있습니다. 위반 시 계약 해지 조건인지 확인하세요.</p>
+          <p style="font-size:12px;color:#4B5563;line-height:1.7;margin:0;">일반적이지만 위반 시 패널티가 없으면 분쟁이 생길 수 있어요. 위반 시 계약 해지 조건인지 확인하세요.</p>
         </div>
       </div>
 
-      <!-- 특약 3: 확인 필요 -->
-      <div class="clause-card clause-yellow mb-3">
-        <div class="flex items-center justify-between mb-2">
-          <span class="tag-yellow">🟡 확인 필요</span>
-          <span class="text-xs text-gray-400">특약 3</span>
+      <!-- 특약 3 -->
+      <div class="clause-card clause-yellow">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span class="tag tag-yellow">🟡 확인 필요</span>
+          <span style="font-size:11px;color:#8B95A1;">특약 3</span>
         </div>
-        <p class="text-sm font-semibold text-gray-900 mb-3">"임차인은 임대인 동의 없이 전대차를 할 수 없다."</p>
-        <div class="bg-white rounded-xl p-3 border border-yellow-100">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-              <span class="text-white text-xs">AI</span>
-            </div>
-            <span class="text-xs font-bold text-yellow-600">AI 분석 결과</span>
+        <p style="font-size:14px;font-weight:600;color:#191F28;margin:0 0 10px;">"임차인은 임대인 동의 없이 전대차를 할 수 없다."</p>
+        <div class="ai-box ai-box-yellow">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div class="ai-badge" style="background:#F59E0B;">AI</div>
+            <span style="font-size:12px;font-weight:700;color:#D97706;">AI 분석 결과</span>
           </div>
-          <p class="text-xs text-gray-700 leading-relaxed">전대차(재임대) 금지는 일반적인 조항입니다. 단기간 비울 때 지인에게 빌려주거나, 에어비앤비 등 숙박 공유도 금지된다는 점을 <strong>인지하고 동의</strong>하는지 확인하세요.</p>
+          <p style="font-size:12px;color:#4B5563;line-height:1.7;margin:0;">전대차(재임대) 금지는 일반적인 조항입니다. 에어비앤비 등 숙박 공유도 금지된다는 점을 인지하고 동의하세요.</p>
         </div>
       </div>
 
-      <!-- 특약 4: 일반 -->
-      <div class="clause-card clause-green mb-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="tag-green">🟢 일반 조항</span>
-          <span class="text-xs text-gray-400">특약 4</span>
+      <!-- 특약 4 -->
+      <div class="clause-card clause-green" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span class="tag tag-green">🟢 일반 조항</span>
+          <span style="font-size:11px;color:#8B95A1;">특약 4</span>
         </div>
-        <p class="text-sm font-semibold text-gray-900 mb-3">"임차인은 퇴실 시 원상복구 의무가 있다."</p>
-        <div class="bg-white rounded-xl p-3 border border-green-100">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-xs">AI</span>
-            </div>
-            <span class="text-xs font-bold text-green-600">AI 분석 결과</span>
+        <p style="font-size:14px;font-weight:600;color:#191F28;margin:0 0 10px;">"임차인은 퇴실 시 원상복구 의무가 있다."</p>
+        <div class="ai-box ai-box-green">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <div class="ai-badge" style="background:#00B493;">AI</div>
+            <span style="font-size:12px;font-weight:700;color:#00705A;">AI 분석 결과</span>
           </div>
-          <p class="text-xs text-gray-700 leading-relaxed">일반적인 표준 조항입니다. 입주 전 방 상태를 <strong>사진으로 찍어두는 것</strong>을 강력히 권장합니다. 퇴실 시 분쟁 방지에 도움이 됩니다.</p>
+          <p style="font-size:12px;color:#4B5563;line-height:1.7;margin:0;">표준 조항입니다. 입주 전 방 상태를 <strong>사진으로 찍어두는 것</strong>을 강력 권장합니다.</p>
         </div>
       </div>
 
-      <div class="card p-4 mb-4 bg-gray-50">
-        <div class="flex items-start gap-3">
-          <span class="text-lg">📞</span>
+      <div class="card" style="padding:16px;margin-bottom:16px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:18px;flex-shrink:0;">📞</span>
           <div>
-            <p class="text-sm font-bold text-gray-700 mb-1">도움이 필요하신가요?</p>
-            <p class="text-xs text-gray-500 mb-2">외국인 주거 관련 무료 법률 상담</p>
-            <a href="#" class="text-xs font-bold text-blue-600 underline">외국인종합안내센터 1345</a>
+            <p style="font-size:13px;font-weight:700;color:#374151;margin:0 0 3px;">도움이 필요하신가요?</p>
+            <p style="font-size:12px;color:#6B7280;margin:0 0 6px;">외국인 주거 무료 법률 상담</p>
+            <a href="tel:1345" style="font-size:13px;font-weight:700;color:#3182F6;">외국인종합안내센터 ☎ 1345</a>
           </div>
         </div>
       </div>
 
-      <div class="flex gap-3">
-        <button onclick="goToScreen(3)" class="btn-secondary flex-1 py-4 text-sm">이전</button>
-        <button onclick="goToScreen(5)" class="btn-primary py-4 text-base" style="flex:2">확인하고 서명하기</button>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goTo(3)">이전</button>
+        <button class="btn-primary" onclick="goTo(5)" style="flex:2;">확인하고 서명하기</button>
       </div>
     </div>
 
-    <!-- SCREEN 5: 최종 확인 + 서명 -->
+    <!-- STEP 5 -->
     <div class="screen" id="screen5">
-      <div class="mb-5">
-        <h2 class="text-xl font-bold text-gray-900 mb-1">최종 확인 및 서명</h2>
-        <p class="text-sm text-gray-400">아래 내용을 확인 후 서명해 주세요.</p>
+      <div style="margin-bottom:20px;">
+        <h2 style="font-size:20px;font-weight:800;color:#191F28;margin:0 0 6px;">최종 확인 및 서명</h2>
+        <p style="font-size:14px;color:#8B95A1;margin:0;">아래 내용 확인 후 서명해 주세요.</p>
       </div>
 
-      <!-- 위험 조항 최종 경고 -->
-      <div class="card p-4 mb-4 bg-red-50 border border-red-200">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="text-red-500">⚠️</span>
-          <span class="text-sm font-bold text-red-700">서명 전 마지막 확인</span>
+      <div class="card" style="padding:16px;margin-bottom:12px;background:#FFF8F8;border:1.5px solid #FECACA;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span style="color:#EF4444;font-size:16px;">⚠️</span>
+          <span style="font-size:14px;font-weight:700;color:#B91C1C;">서명 전 마지막 확인</span>
         </div>
-        <div class="check-item">
-          <input type="checkbox" class="mt-0.5 accent-red-500" id="check1" />
-          <label for="check1" class="text-xs text-gray-700 leading-relaxed">특약 1 (임대인 임의 해지 조항)의 내용을 이해하고, 위험성을 인지한 상태로 동의합니다.</label>
+        <div class="check-row">
+          <input type="checkbox" id="ck1" />
+          <label for="ck1" style="font-size:13px;color:#374151;line-height:1.6;cursor:pointer;">특약 1 (임대인 임의 해지 조항)의 위험성을 인지하고 동의합니다.</label>
         </div>
-        <div class="check-item">
-          <input type="checkbox" class="mt-0.5 accent-yellow-500" id="check2" />
-          <label for="check2" class="text-xs text-gray-700 leading-relaxed">특약 2, 3의 확인 필요 조항 내용을 충분히 이해했습니다.</label>
-        </div>
-      </div>
-
-      <!-- 최종 계약 정보 요약 -->
-      <div class="card p-5 mb-4">
-        <p class="text-sm font-bold text-gray-900 mb-3">계약 최종 요약</p>
-        <div class="info-row">
-          <span class="text-xs text-gray-500">주소</span>
-          <span class="text-xs font-semibold text-gray-800">서울 마포구 서교동 123-45, 302호</span>
-        </div>
-        <div class="info-row">
-          <span class="text-xs text-gray-500">보증금</span>
-          <span class="text-xs font-bold text-blue-600">50,000,000원</span>
-        </div>
-        <div class="info-row">
-          <span class="text-xs text-gray-500">월세</span>
-          <span class="text-xs font-semibold text-gray-800">500,000원 / 월</span>
-        </div>
-        <div class="info-row">
-          <span class="text-xs text-gray-500">계약기간</span>
-          <span class="text-xs font-semibold text-gray-800">2024.04.01 ~ 2026.03.31</span>
-        </div>
-        <div class="info-row">
-          <span class="text-xs text-gray-500">임차인</span>
-          <span class="text-xs font-semibold text-gray-800">陳志偉 (Chen Zhiwei)</span>
-        </div>
-        <div class="info-row">
-          <span class="text-xs text-gray-500">임대인</span>
-          <span class="text-xs font-semibold text-gray-800">김대한</span>
+        <div class="check-row">
+          <input type="checkbox" id="ck2" />
+          <label for="ck2" style="font-size:13px;color:#374151;line-height:1.6;cursor:pointer;">특약 2, 3의 확인 필요 조항 내용을 충분히 이해했습니다.</label>
         </div>
       </div>
 
-      <!-- 서명 영역 -->
-      <div class="card p-5 mb-4">
-        <p class="text-sm font-bold text-gray-900 mb-3">전자서명</p>
-        <p class="text-xs text-gray-400 mb-4">아래 박스에 서명을 그려주세요</p>
-        <div class="relative border-2 border-dashed border-gray-200 rounded-xl" style="height:120px; background:#FAFAFA;" id="signaturePad">
-          <canvas id="signCanvas" class="absolute inset-0 w-full h-full rounded-xl" style="touch-action: none;"></canvas>
-          <div id="signPlaceholder" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span class="text-xs text-gray-300">여기에 서명하세요</span>
+      <div class="card" style="padding:20px;margin-bottom:12px;">
+        <p style="font-size:15px;font-weight:700;color:#191F28;margin:0 0 12px;">계약 최종 요약</p>
+        <div class="info-row"><span class="info-label">주소</span><span class="info-value">마포구 서교동 123-45, 302호</span></div>
+        <div class="info-row"><span class="info-label">보증금</span><span class="info-value" style="color:#3182F6;">50,000,000원</span></div>
+        <div class="info-row"><span class="info-label">월세</span><span class="info-value">500,000원/월</span></div>
+        <div class="info-row"><span class="info-label">계약기간</span><span class="info-value">2024.04.01 ~ 2026.03.31</span></div>
+        <div class="info-row"><span class="info-label">임차인</span><span class="info-value">陳志偉 (Chen Zhiwei)</span></div>
+        <div class="info-row"><span class="info-label">임대인</span><span class="info-value">김대한</span></div>
+      </div>
+
+      <div class="card" style="padding:20px;margin-bottom:12px;">
+        <p style="font-size:15px;font-weight:700;color:#191F28;margin:0 0 6px;">전자서명</p>
+        <p style="font-size:12px;color:#8B95A1;margin:0 0 12px;">아래 박스에 손가락으로 서명해 주세요</p>
+        <div class="sign-pad-wrap">
+          <canvas id="signCanvas"></canvas>
+          <div class="sign-placeholder" id="signHint">
+            <span style="font-size:13px;color:#D1D5DB;">여기에 서명하세요</span>
           </div>
         </div>
-        <button onclick="clearSignature()" class="mt-2 text-xs text-gray-400 underline">서명 지우기</button>
+        <button onclick="clearSign()" style="background:none;border:none;font-size:12px;color:#8B95A1;text-decoration:underline;padding:8px 0;cursor:pointer;display:block;">서명 지우기</button>
       </div>
 
-      <div class="check-item card p-4 mb-4">
-        <input type="checkbox" id="agreeAll" class="mt-0.5 accent-blue-500" />
-        <label for="agreeAll" class="text-xs text-gray-700 leading-relaxed">본인은 위의 계약 내용을 모두 확인하였으며, 이에 동의합니다. 전자서명은 자필 서명과 동일한 법적 효력을 가집니다.</label>
+      <div class="card" style="padding:16px;margin-bottom:16px;">
+        <div class="check-row" style="border-bottom:none;padding:0;">
+          <input type="checkbox" id="ckAll" />
+          <label for="ckAll" style="font-size:13px;color:#374151;line-height:1.6;cursor:pointer;">위의 계약 내용을 모두 확인하였으며 동의합니다. 전자서명은 자필 서명과 동일한 법적 효력을 가집니다.</label>
+        </div>
       </div>
 
-      <button onclick="submitContract()" class="btn-primary w-full py-4 text-base mb-3">서명 완료 및 제출</button>
-      <button onclick="goToScreen(4)" class="btn-secondary w-full py-4 text-sm">이전으로 돌아가기</button>
+      <button class="btn-primary" onclick="submitSign()" style="margin-bottom:10px;">서명 완료 및 제출</button>
+      <button class="btn-secondary" onclick="goTo(4)">이전으로 돌아가기</button>
     </div>
 
-    <!-- SCREEN 6: 완료 -->
+    <!-- STEP 6: 완료 -->
     <div class="screen" id="screen6">
-      <div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-4xl mb-6">✅</div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">서명 완료!</h2>
-        <p class="text-sm text-gray-500 mb-6 px-4">집주인의 서명을 기다리고 있어요.<br>서명이 완료되면 알림을 드릴게요.</p>
-        <div class="card p-5 w-full mb-4 text-left">
-          <p class="text-sm font-bold text-gray-900 mb-3">진행 상태</p>
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-              <span class="text-white text-xs">✓</span>
-            </div>
-            <span class="text-sm text-gray-700">임차인 서명 완료</span>
-            <span class="ml-auto text-xs text-green-600 font-semibold">완료</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-              <div class="w-3 h-3 bg-gray-400 rounded-full animate-pulse"></div>
-            </div>
-            <span class="text-sm text-gray-500">임대인 서명 대기 중</span>
-            <span class="ml-auto text-xs text-gray-400 font-semibold">대기</span>
-          </div>
-        </div>
-        <button class="btn-secondary w-full py-4 text-sm">계약서 미리보기</button>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:40px 0 24px;">
+        <div style="width:80px;height:80px;background:#ECFDF5;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:20px;">✅</div>
+        <h2 style="font-size:24px;font-weight:800;color:#191F28;margin:0 0 8px;">서명 완료!</h2>
+        <p style="font-size:14px;color:#8B95A1;line-height:1.7;margin:0;">집주인의 서명을 기다리고 있어요.<br>서명이 완료되면 알림을 드릴게요.</p>
       </div>
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <p style="font-size:15px;font-weight:700;color:#191F28;margin:0 0 14px;">진행 상태</p>
+        <div class="status-row" style="margin-bottom:10px;">
+          <div style="width:28px;height:28px;background:#00B493;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;flex-shrink:0;">✓</div>
+          <span style="font-size:14px;color:#191F28;flex:1;">임차인 서명 완료</span>
+          <span class="tag tag-green">완료</span>
+        </div>
+        <div class="status-row">
+          <div style="width:28px;height:28px;background:#F2F4F6;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <div style="width:10px;height:10px;background:#D1D5DB;border-radius:50%;animation:pulse 1.5s infinite;"></div>
+          </div>
+          <span style="font-size:14px;color:#8B95A1;flex:1;">임대인 서명 대기 중</span>
+          <span class="tag" style="background:#F2F4F6;color:#8B95A1;">대기</span>
+        </div>
+      </div>
+      <button class="btn-secondary">계약서 미리보기</button>
     </div>
 
   </div>
 
-  <!-- 하단 고정 진행률 (텍스트) -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-5 py-3 max-w-[430px] mx-auto">
-    <div id="stepHint" class="text-center text-xs text-gray-400">
-      2단계 / 5단계 — 개인정보 입력
-    </div>
+  <!-- ───── 하단 힌트 ───── -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #F2F4F6;padding:12px 20px;z-index:50;">
+    <p id="bottomHint" style="margin:0;text-align:center;font-size:12px;color:#8B95A1;font-weight:500;">2단계 / 5단계 — 개인정보 입력</p>
   </div>
 
   <script>
-    let currentScreen = 2;
-    const stepLabels = ['', '계약 확인', '내 정보 입력', '계약 조건 확인', '특약 확인', '서명'];
+    const stepNames = ['', '계약 확인', '내 정보 입력', '계약 조건 확인', '특약 확인', '전자서명'];
+    let cur = 2;
 
-    function goToScreen(n) {
-      document.getElementById('screen' + currentScreen).classList.remove('active');
+    function goTo(n) {
+      document.getElementById('screen' + cur).classList.remove('active');
       document.getElementById('screen' + n).classList.add('active');
-      currentScreen = n;
-      updateProgress(n);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      cur = n;
+      updateStep(n);
+      window.scrollTo(0, 0);
     }
 
-    function updateProgress(step) {
-      const steps = [null, 's1', 's2', 's3', 's4', 's5'];
-      const lines = [null, 'line1', 'line2', 'line3', 'line4'];
-
+    function updateStep(n) {
       for (let i = 1; i <= 5; i++) {
         const el = document.getElementById('s' + i);
-        el.className = 'progress-step';
-        if (i < step) { el.classList.add('step-done'); el.textContent = '✓'; }
-        else if (i === step) { el.classList.add('step-active'); el.textContent = i; }
-        else { el.classList.add('step-inactive'); el.textContent = i; }
+        el.className = 'progress-step ' + (i < n ? 'step-done' : i === n ? 'step-active' : 'step-inactive');
+        el.textContent = i < n ? '✓' : String(i);
       }
-
       for (let i = 1; i <= 4; i++) {
-        document.getElementById('line' + i).style.width = i < step ? '100%' : '0%';
+        document.getElementById('l' + i).style.width = i < n ? '100%' : '0%';
       }
-
-      const hint = document.getElementById('stepHint');
-      if (step <= 5) hint.textContent = step + '단계 / 5단계 — ' + stepLabels[step];
-      else hint.textContent = '계약이 완료되었습니다';
+      const labels = ['확인', '내 정보', '조건', '특약', '서명'];
+      document.getElementById('stepLabel2').textContent = n <= 5 ? labels[n - 1] : '완료';
+      document.getElementById('bottomHint').textContent = n <= 5
+        ? n + '단계 / 5단계 — ' + stepNames[n]
+        : '계약이 완료되었습니다';
     }
 
     // 서명 캔버스
     const canvas = document.getElementById('signCanvas');
     const ctx = canvas.getContext('2d');
-    let drawing = false;
-    let hasSigned = false;
+    let drawing = false, signed = false;
 
-    function resizeCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+    function resize() {
+      const r = canvas.parentElement.getBoundingClientRect();
+      canvas.width = r.width * window.devicePixelRatio;
+      canvas.height = r.height * window.devicePixelRatio;
+      canvas.style.width = r.width + 'px';
+      canvas.style.height = r.height + 'px';
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     }
-
-    canvas.addEventListener('mousedown', e => { drawing = true; ctx.beginPath(); ctx.moveTo(getX(e), getY(e)); });
-    canvas.addEventListener('mousemove', e => { if (!drawing) return; draw(e); });
+    function px(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+    function tpx(e) { const r = canvas.getBoundingClientRect(), t = e.touches[0]; return { x: t.clientX - r.left, y: t.clientY - r.top }; }
+    function stroke(p) { ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#191F28'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); signed = true; document.getElementById('signHint').style.display = 'none'; }
+    canvas.addEventListener('mousedown', e => { drawing = true; ctx.beginPath(); const p = px(e); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove', e => { if (!drawing) return; stroke(px(e)); });
     canvas.addEventListener('mouseup', () => { drawing = false; });
-    canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; ctx.beginPath(); ctx.moveTo(getX(e.touches[0]), getY(e.touches[0])); });
-    canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; draw(e.touches[0]); });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; ctx.beginPath(); const p = tpx(e); ctx.moveTo(p.x, p.y); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; stroke(tpx(e)); }, { passive: false });
     canvas.addEventListener('touchend', () => { drawing = false; });
+    window.addEventListener('load', resize);
+    window.addEventListener('resize', resize);
 
-    function getX(e) { return e.clientX - canvas.getBoundingClientRect().left; }
-    function getY(e) { return e.clientY - canvas.getBoundingClientRect().top; }
-    function draw(e) {
-      ctx.lineTo(getX(e), getY(e));
-      ctx.strokeStyle = '#191F28';
-      ctx.lineWidth = 2.5;
-      ctx.lineCap = 'round';
-      ctx.stroke();
-      hasSigned = true;
-      document.getElementById('signPlaceholder').style.display = 'none';
-    }
+    function clearSign() { resize(); signed = false; document.getElementById('signHint').style.display = 'flex'; }
 
-    function clearSignature() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      hasSigned = false;
-      document.getElementById('signPlaceholder').style.display = 'flex';
-    }
-
-    function submitContract() {
-      if (!document.getElementById('check1').checked || !document.getElementById('check2').checked) {
-        alert('위험 조항 확인 체크박스를 모두 체크해주세요.');
-        return;
+    function submitSign() {
+      if (!document.getElementById('ck1').checked || !document.getElementById('ck2').checked) {
+        alert('위험 조항 확인란을 모두 체크해 주세요.'); return;
       }
-      if (!document.getElementById('agreeAll').checked) {
-        alert('계약 내용 동의 체크박스를 체크해주세요.');
-        return;
+      if (!document.getElementById('ckAll').checked) {
+        alert('계약 동의 체크박스를 체크해 주세요.'); return;
       }
-      goToScreen(6);
+      goTo(6);
     }
-
-    window.addEventListener('load', resizeCanvas);
-    window.addEventListener('resize', resizeCanvas);
   </script>
 </body>
 </html>
