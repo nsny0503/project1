@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>계약서 관리 - 집주인</title>
+  <title>Insure! - 계약서 관리</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
   <style>
@@ -54,7 +54,7 @@
           <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
             <span class="text-white text-xs font-bold">집</span>
           </div>
-          <span class="text-base font-bold text-gray-900">찜완</span>
+          <span class="text-base font-bold text-gray-900">Insure!</span>
           <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">집주인</span>
         </div>
         <button onclick="goTo('dashboard')" class="text-xs text-gray-400 font-medium hover:text-blue-500 transition-colors">대시보드</button>
@@ -393,7 +393,7 @@
           </div>
           <div class="mb-4">
             <p class="text-xs font-bold text-gray-500 mb-2">초대 링크</p>
-            <div class="link-box mb-2">https://zzimwan.app/contract/ABC-2024-0312</div>
+            <div class="link-box mb-2">https://insure-app.kr/contract/ABC-2024-0312</div>
             <div class="grid grid-cols-2 gap-2">
               <button onclick="copyLink()" class="btn-secondary py-3 text-sm">링크 복사</button>
               <button onclick="shareKakao()" class="py-3 text-sm rounded-xl font-semibold text-yellow-800 transition-all" style="background:#FEE500;">카카오 공유</button>
@@ -616,7 +616,7 @@
             <span class="text-red-500 text-xs font-bold">PDF</span>
           </div>
           <div class="flex-1">
-            <p class="text-sm font-semibold text-gray-900">계약서_마포서교동_2024.pdf</p>
+            <p class="text-sm font-semibold text-gray-900">Insure_계약서_마포서교동_2024.pdf</p>
             <p class="text-xs text-gray-400">전자서명 포함 · 법적 효력 있음</p>
           </div>
           <button class="text-blue-500 text-sm font-bold">다운</button>
@@ -690,10 +690,10 @@
     }
 
     function copyLink() {
-      navigator.clipboard.writeText('https://zzimwan.app/contract/ABC-2024-0312').then(() => {
+      navigator.clipboard.writeText('https://insure-app.kr/contract/ABC-2024-0312').then(() => {
         alert('링크가 복사되었습니다!');
       }).catch(() => {
-        alert('링크: https://zzimwan.app/contract/ABC-2024-0312');
+        alert('링크: https://insure-app.kr/contract/ABC-2024-0312');
       });
     }
 
