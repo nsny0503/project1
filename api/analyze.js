@@ -61,15 +61,29 @@ function getRecentMonths(n) {
   return months;
 }
 
+function parseXml(xml) {
+  const items = [];
+  const blocks = xml.match(/<item>([\s\S]*?)<\/item>/g);
+  if (!blocks) return items;
+  for (const block of blocks) {
+    const obj = {};
+    const fields = block.match(/<(\w+)>([^<]*)<\/\1>/g) || [];
+    for (const f of fields) {
+      const m = f.match(/<(\w+)>([^<]*)<\/\1>/);
+      if (m) obj[m[1]] = m[2].trim();
+    }
+    items.push(obj);
+  }
+  return items;
+}
+
 async function fetchTransactions(endpoint, lawdCd, dealYmd, serviceKey) {
   const url = `https://apis.data.go.kr/1613000/${endpoint}` +
-    `?LAWD_CD=${lawdCd}&DEAL_YMD=${dealYmd}&serviceKey=${serviceKey}&_type=json&numOfRows=100`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    `?LAWD_CD=${lawdCd}&DEAL_YMD=${dealYmd}&serviceKey=${serviceKey}&numOfRows=100`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
   if (!res.ok) return [];
-  const json = await res.json();
-  const items = json?.response?.body?.items?.item;
-  if (!items) return [];
-  return Array.isArray(items) ? items : [items];
+  const xml = await res.text();
+  return parseXml(xml);
 }
 
 function parseWon(v) {
@@ -78,8 +92,9 @@ function parseWon(v) {
 
 function calcMarket(deposit, transactions) {
   const dep = parseWon(deposit);
+  // 기술문서 기준 필드명: deposit (보증금액, 만원 단위)
   const deposits = transactions
-    .map(t => parseWon(t['보증금액'] ?? t['보증금'] ?? t['전세금']) * 10000)
+    .map(t => parseWon(t['deposit']) * 10000)
     .filter(v => v > 0);
 
   if (!deposits.length) return { dep, median: 0, medManWon: 0, ratio: null, sampleCount: 0 };
