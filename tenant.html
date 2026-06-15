@@ -134,11 +134,11 @@
       <div class="card" style="padding:20px;margin-bottom:16px;">
         <div class="input-wrap">
           <label class="input-label">이름 (여권 기준)</label>
-          <input type="text" class="input-field" placeholder="홍길동 / Hong Gil-dong" value="陳志偉 (Chen Zhiwei)" />
+          <input type="text" id="tt_name" class="input-field" placeholder="홍길동 / Hong Gil-dong" value="陳志偉 (Chen Zhiwei)" />
         </div>
         <div class="input-wrap">
           <label class="input-label">국적</label>
-          <select class="input-field">
+          <select id="tt_nationality" class="input-field">
             <option selected>중국 (China)</option>
             <option>미국 (USA)</option>
             <option>베트남 (Vietnam)</option>
@@ -149,15 +149,15 @@
         </div>
         <div class="input-wrap">
           <label class="input-label">등록 외국인번호 / 여권번호</label>
-          <input type="text" class="input-field" placeholder="123456-1234567" value="F 234-8821-01" />
+          <input type="text" id="tt_id_num" class="input-field" placeholder="123456-1234567" value="F 234-8821-01" />
         </div>
         <div class="input-wrap">
           <label class="input-label">연락처</label>
-          <input type="tel" class="input-field" placeholder="010-0000-0000" value="010-1234-5678" />
+          <input type="tel" id="tt_phone" class="input-field" placeholder="010-0000-0000" value="010-1234-5678" />
         </div>
         <div class="input-wrap" style="margin-bottom:0;">
           <label class="input-label">체류 자격</label>
-          <select class="input-field">
+          <select id="tt_visa_type" class="input-field">
             <option selected>D-2 (유학)</option>
             <option>E-7 (특정활동)</option>
             <option>F-2 (거주)</option>
@@ -433,7 +433,8 @@
           <span class="tag" style="background:#F2F4F6;color:#8B95A1;">대기</span>
         </div>
       </div>
-      <button class="btn-secondary">계약서 미리보기</button>
+      <button class="btn-primary" onclick="window.location.href='contract.html'" style="margin-bottom:10px;">계약서 미리보기 / PDF 저장</button>
+      <button class="btn-secondary" onclick="window.location.href='contract.html'">계약서 미리보기</button>
     </div>
 
   </div>
@@ -505,7 +506,20 @@
       if (!document.getElementById('ckAll').checked) {
         alert('계약 동의 체크박스를 체크해 주세요.'); return;
       }
+      saveTenantData();
       goTo(6);
+    }
+
+    function gv(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+    function saveTenantData() {
+      const data = {
+        name: gv('tt_name'),
+        nationality: gv('tt_nationality'),
+        id_num: gv('tt_id_num'),
+        phone: gv('tt_phone'),
+        visa_type: gv('tt_visa_type'),
+      };
+      localStorage.setItem('insure_tenant', JSON.stringify(data));
     }
   </script>
 </body>

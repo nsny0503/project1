@@ -183,35 +183,55 @@
 
       <!-- SUB 1: 매물 정보 -->
       <div id="sub1">
-        <h2 style="font-size:20px;font-weight:800;color:#191F28;margin:0 0 4px;">매물 정보 입력</h2>
-        <p style="font-size:14px;color:#8B95A1;margin:0 0 20px;">임차인에게 보여질 기본 정보입니다.</p>
+        <h2 style="font-size:20px;font-weight:800;color:#191F28;margin:0 0 4px;">집주인 · 매물 정보 입력</h2>
+        <p style="font-size:14px;color:#8B95A1;margin:0 0 20px;">계약서에 등록될 정보입니다.</p>
+        <div class="card" style="padding:20px;margin-bottom:12px;">
+          <p style="font-size:13px;font-weight:700;color:#6B7684;margin:0 0 14px;">집주인 본인 정보</p>
+          <div class="input-wrap">
+            <label class="input-label">성명</label>
+            <input type="text" id="ll_name" class="input-field" placeholder="홍길동" />
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">주민등록번호</label>
+            <input type="text" id="ll_id_num" class="input-field" placeholder="000000-0000000" />
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">전화번호</label>
+            <input type="tel" id="ll_phone" class="input-field" placeholder="010-0000-0000" />
+          </div>
+          <div class="input-wrap" style="margin-bottom:0;">
+            <label class="input-label">임대사업자 등록번호 (없으면 공란)</label>
+            <input type="text" id="ll_reg_no" class="input-field" placeholder="등록번호" />
+          </div>
+        </div>
         <div class="card" style="padding:20px;margin-bottom:16px;">
+          <p style="font-size:13px;font-weight:700;color:#6B7684;margin:0 0 14px;">매물 정보</p>
           <div class="input-wrap">
             <label class="input-label">도로명 주소</label>
-            <input type="text" class="input-field" placeholder="예: 서울특별시 마포구 독막로 123" />
+            <input type="text" id="ll_address" class="input-field" placeholder="예: 서울특별시 마포구 독막로 123" />
           </div>
           <div class="input-wrap">
             <label class="input-label">상세 주소 (동/호수)</label>
-            <input type="text" class="input-field" placeholder="예: 302호" />
+            <input type="text" id="ll_address_detail" class="input-field" placeholder="예: 302호" />
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="input-wrap">
             <div>
               <label class="input-label">주택 유형</label>
-              <select class="input-field"><option>원룸</option><option>투룸</option><option>오피스텔</option><option>아파트</option><option>빌라</option></select>
+              <select id="ll_housing_type" class="input-field"><option>원룸</option><option>투룸</option><option>오피스텔</option><option>아파트</option><option>빌라</option><option>연립주택</option><option>다세대주택</option><option>다가구주택</option></select>
             </div>
             <div>
               <label class="input-label">전용면적</label>
-              <input type="text" class="input-field" placeholder="33㎡" />
+              <input type="text" id="ll_area" class="input-field" placeholder="33㎡" />
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="input-wrap">
             <div>
               <label class="input-label">해당 층</label>
-              <input type="number" class="input-field" placeholder="3" inputmode="numeric" />
+              <input type="number" id="ll_floor" class="input-field" placeholder="3" inputmode="numeric" />
             </div>
             <div>
               <label class="input-label">건물 전체 층</label>
-              <input type="number" class="input-field" placeholder="5" inputmode="numeric" />
+              <input type="number" id="ll_total_floor" class="input-field" placeholder="5" inputmode="numeric" />
             </div>
           </div>
           <div class="input-wrap" style="margin-bottom:0;">
@@ -237,7 +257,7 @@
           <div class="input-wrap">
             <label class="input-label">보증금</label>
             <div style="position:relative;">
-              <input type="text" class="input-field" placeholder="50,000,000" style="padding-right:42px;" />
+              <input type="text" id="ll_deposit" class="input-field" placeholder="50,000,000" style="padding-right:42px;" />
               <span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:14px;color:#8B95A1;font-weight:500;">원</span>
             </div>
             <p style="font-size:12px;color:#8B95A1;margin:6px 0 0;">예: 5천만원 → 50,000,000</p>
@@ -245,14 +265,14 @@
           <div class="input-wrap">
             <label class="input-label">월세</label>
             <div style="position:relative;">
-              <input type="text" class="input-field" placeholder="500,000" style="padding-right:42px;" />
+              <input type="text" id="ll_monthly_rent" class="input-field" placeholder="500,000" style="padding-right:42px;" />
               <span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:14px;color:#8B95A1;font-weight:500;">원</span>
             </div>
           </div>
           <div class="input-wrap">
             <label class="input-label">관리비</label>
             <div style="position:relative;">
-              <input type="text" class="input-field" placeholder="50,000" style="padding-right:42px;" />
+              <input type="text" id="ll_mgmt_fee" class="input-field" placeholder="50,000" style="padding-right:42px;" />
               <span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:14px;color:#8B95A1;font-weight:500;">원</span>
             </div>
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
@@ -264,15 +284,15 @@
           </div>
           <div class="input-wrap">
             <label class="input-label">계약 시작일</label>
-            <input type="date" class="input-field" />
+            <input type="date" id="ll_start_date" class="input-field" />
           </div>
           <div class="input-wrap">
             <label class="input-label">계약 종료일</label>
-            <input type="date" class="input-field" />
+            <input type="date" id="ll_end_date" class="input-field" />
           </div>
           <div class="input-wrap" style="margin-bottom:0;">
             <label class="input-label">월세 납부일</label>
-            <select class="input-field"><option>매월 1일</option><option>매월 5일</option><option>매월 10일</option><option>매월 15일</option><option>매월 25일</option></select>
+            <select id="ll_payment_day" class="input-field"><option>매월 1일</option><option>매월 5일</option><option>매월 10일</option><option>매월 15일</option><option>매월 25일</option></select>
           </div>
         </div>
         <div class="btn-row">
@@ -373,15 +393,16 @@
           <p style="font-size:14px;font-weight:700;color:#191F28;margin:0 0 14px;">임차인 정보 미리 입력 (선택)</p>
           <div class="input-wrap">
             <label class="input-label">임차인 이름</label>
-            <input type="text" class="input-field" placeholder="계약서에 미리 표시됩니다" />
+            <input type="text" id="ll_tenant_name" class="input-field" placeholder="계약서에 미리 표시됩니다" />
           </div>
           <div class="input-wrap" style="margin-bottom:0;">
             <label class="input-label">연락처</label>
-            <input type="tel" class="input-field" placeholder="010-0000-0000" />
+            <input type="tel" id="ll_tenant_phone" class="input-field" placeholder="010-0000-0000" />
           </div>
         </div>
 
-        <button class="btn-primary" onclick="showScreen('detail')" style="margin-bottom:10px;">계약 현황 확인하기</button>
+        <button class="btn-primary" onclick="saveAndPreview()" style="margin-bottom:10px;">계약서 미리보기 / PDF</button>
+        <button class="btn-secondary" onclick="showScreen('detail')" style="margin-bottom:10px;">계약 현황 확인하기</button>
         <button class="btn-secondary" onclick="showScreen('dashboard')">대시보드로 돌아가기</button>
       </div>
     </div>
@@ -587,6 +608,7 @@
     }
 
     function selectType(t) {
+      currentType = t;
       ['A','B','C'].forEach(x => {
         const b = document.getElementById('type' + x);
         if (!b) return;
@@ -620,6 +642,27 @@
       navigator.clipboard.writeText(url).then(() => alert('링크가 복사되었습니다!')).catch(() => alert('링크: ' + url));
     }
     function shareKakao() { alert('카카오톡 공유는 실제 앱 연동 시 활성화됩니다.'); }
+
+    function g(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+    function saveContractData() {
+      const data = {
+        name: g('ll_name'), id_num: g('ll_id_num'), phone: g('ll_phone'), reg_no: g('ll_reg_no'),
+        address: g('ll_address'), address_detail: g('ll_address_detail'),
+        housing_type: g('ll_housing_type'), area: g('ll_area'),
+        floor: g('ll_floor'), total_floor: g('ll_total_floor'),
+        contract_type: currentType || 'A',
+        deposit: g('ll_deposit'), monthly_rent: g('ll_monthly_rent'), mgmt_fee: g('ll_mgmt_fee'),
+        start_date: g('ll_start_date'), end_date: g('ll_end_date'), payment_day: g('ll_payment_day'),
+        tenant_name: g('ll_tenant_name'), tenant_phone: g('ll_tenant_phone'),
+      };
+      localStorage.setItem('insure_landlord', JSON.stringify(data));
+    }
+    function saveAndPreview() {
+      saveContractData();
+      window.location.href = 'contract.html';
+    }
+
+    let currentType = 'A';
   </script>
 </body>
 </html>
