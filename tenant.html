@@ -2,9 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Insure! - 계약서 작성</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -35,7 +34,7 @@
     .info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 13px 0; border-bottom: 1px solid #F2F4F6; }
     .info-row:last-child { border-bottom: none; }
     .info-label { font-size: 14px; color: #6B7684; flex-shrink: 0; }
-    .info-value { font-size: 14px; font-weight: 600; color: #191F28; text-align: right; }
+    .info-value { font-size: 14px; font-weight: 600; color: #191F28; text-align: right; word-break: break-word; overflow-wrap: break-word; min-width: 0; }
 
     .progress-step { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; transition: background .3s, color .3s; }
     .step-done  { background: #00B493; color: #fff; }
@@ -103,7 +102,7 @@
   </div>
 
   <!-- ───── 콘텐츠 ───── -->
-  <div style="padding:20px 20px 120px;" id="content">
+  <div style="padding:20px 20px calc(80px + env(safe-area-inset-bottom, 0px));" id="content">
 
     <!-- STEP 1 -->
     <div class="screen" id="screen1">
@@ -440,7 +439,7 @@
   </div>
 
   <!-- ───── 하단 힌트 ───── -->
-  <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #F2F4F6;padding:12px 20px;z-index:50;">
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #F2F4F6;padding:12px 20px calc(12px + env(safe-area-inset-bottom, 0px));z-index:50;">
     <p id="bottomHint" style="margin:0;text-align:center;font-size:12px;color:#8B95A1;font-weight:500;">2단계 / 5단계 — 개인정보 입력</p>
   </div>
 

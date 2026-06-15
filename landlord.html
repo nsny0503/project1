@@ -2,9 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Insure! - 계약서 관리</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; }
@@ -42,7 +41,7 @@
     .info-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F2F4F6; }
     .info-row:last-child { border-bottom: none; }
     .info-label { font-size: 13px; color: #6B7684; flex-shrink: 0; }
-    .info-value { font-size: 13px; font-weight: 600; color: #191F28; text-align: right; }
+    .info-value { font-size: 13px; font-weight: 600; color: #191F28; text-align: right; word-break: break-word; overflow-wrap: break-word; min-width: 0; }
 
     .screen { display: none; }
     .screen.active { display: block; animation: fadeIn .2s ease; }
@@ -75,7 +74,7 @@
     .tl-dot-active  { background: #FEF3C7; border: 2px solid #F59E0B; }
     .tl-dot-pending { background: #F2F4F6; }
 
-    .bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #F2F4F6; display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 50; }
+    .bottom-tabs { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #F2F4F6; display: grid; grid-template-columns: 1fr 1fr 1fr; z-index: 50; padding-bottom: env(safe-area-inset-bottom, 0px); }
     .tab-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 0 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; border: none; background: none; }
     .tab-btn span:first-child { font-size: 20px; }
     .tab-btn span:last-child { font-size: 10px; font-weight: 600; color: #8B95A1; }
@@ -102,7 +101,7 @@
   </div>
 
   <!-- ───── 콘텐츠 영역 ───── -->
-  <div style="padding:20px 20px 90px;" id="content">
+  <div style="padding:20px 20px calc(80px + env(safe-area-inset-bottom, 0px));" id="content">
 
     <!-- ═══ 대시보드 ═══ -->
     <div class="screen active" id="scr-dashboard">
@@ -208,11 +207,11 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="input-wrap">
             <div>
               <label class="input-label">해당 층</label>
-              <input type="number" class="input-field" placeholder="3" />
+              <input type="number" class="input-field" placeholder="3" inputmode="numeric" />
             </div>
             <div>
               <label class="input-label">건물 전체 층</label>
-              <input type="number" class="input-field" placeholder="5" />
+              <input type="number" class="input-field" placeholder="5" inputmode="numeric" />
             </div>
           </div>
           <div class="input-wrap" style="margin-bottom:0;">
@@ -263,9 +262,13 @@
               <button style="font-size:12px;padding:6px 12px;border-radius:8px;border:1.5px solid #E8EAED;background:#fff;color:#6B7684;font-weight:600;cursor:pointer;">경비</button>
             </div>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="input-wrap">
-            <div><label class="input-label">계약 시작일</label><input type="date" class="input-field" /></div>
-            <div><label class="input-label">계약 종료일</label><input type="date" class="input-field" /></div>
+          <div class="input-wrap">
+            <label class="input-label">계약 시작일</label>
+            <input type="date" class="input-field" />
+          </div>
+          <div class="input-wrap">
+            <label class="input-label">계약 종료일</label>
+            <input type="date" class="input-field" />
           </div>
           <div class="input-wrap" style="margin-bottom:0;">
             <label class="input-label">월세 납부일</label>
