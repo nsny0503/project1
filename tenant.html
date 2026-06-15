@@ -433,8 +433,18 @@
           <span class="tag" style="background:#F2F4F6;color:#8B95A1;">대기</span>
         </div>
       </div>
-      <button class="btn-primary" onclick="window.location.href='contract.html'" style="margin-bottom:10px;">계약서 미리보기 / PDF 저장</button>
-      <button class="btn-secondary" onclick="window.location.href='contract.html'">계약서 미리보기</button>
+
+      <!-- AI 위험도 분석 카드 -->
+      <div id="ai-card" class="card" style="padding:20px;margin-bottom:16px;border:1.5px solid #E8EAED;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="font-size:15px;font-weight:700;color:#191F28;">보증금 위험도 분석</span>
+          <span id="ai-badge" style="padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#F2F4F6;color:#8B95A1;">분석 중...</span>
+        </div>
+        <p id="ai-msg" style="font-size:14px;color:#374151;line-height:1.65;margin:0;">AI가 이 지역 실거래가 데이터를 분석하고 있습니다...</p>
+        <div id="ai-meta" style="margin-top:8px;font-size:12px;color:#8B95A1;"></div>
+      </div>
+
+      <button class="btn-primary" onclick="window.location.href='contract.html'" style="margin-bottom:10px;">계약서 전체 보기 / PDF</button>
     </div>
 
   </div>
@@ -508,6 +518,40 @@
       }
       saveTenantData();
       goTo(6);
+      runAiAnalysis();
+    }
+
+    async function runAiAnalysis() {
+      const ll = JSON.parse(localStorage.getItem('insure_landlord') || '{}');
+      try {
+        const resp = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            address: (ll.address || '') + ' ' + (ll.address_detail || ''),
+            deposit: ll.deposit || '',
+            housing_type: ll.housing_type || '',
+          }),
+        });
+        if (!resp.ok) throw new Error();
+        const d = await resp.json();
+        const badge = document.getElementById('ai-badge');
+        const msg = document.getElementById('ai-msg');
+        const meta = document.getElementById('ai-meta');
+        const card = document.getElementById('ai-card');
+        badge.textContent = d.riskLabel || '-';
+        badge.style.background = d.riskColor || '#64748b';
+        badge.style.color = '#fff';
+        msg.textContent = d.message || '';
+        meta.textContent = d.medianDeposit
+          ? `지역 중앙값 ${Number(d.medianDeposit).toLocaleString()}만원 · ${d.sampleCount}건 분석`
+          : '';
+        const borderMap = { safe: '#22c55e', warn: '#f59e0b', danger: '#ef4444', unknown: '#E8EAED' };
+        card.style.borderColor = borderMap[d.risk] || '#E8EAED';
+      } catch (e) {
+        document.getElementById('ai-badge').textContent = '분석 실패';
+        document.getElementById('ai-msg').textContent = '분석 중 오류가 발생했습니다. 계약서 화면에서 다시 시도해 주세요.';
+      }
     }
 
     function gv(id) { const el = document.getElementById(id); return el ? el.value : ''; }
