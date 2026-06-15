@@ -95,9 +95,20 @@
   <span class="toolbar-title">표준임대차계약서</span>
   <span class="edit-badge">노란 칸 클릭 → 직접 편집</span>
   <button class="tb-btn tb-secondary" onclick="resetEdits()">초기화</button>
+  <button class="tb-btn" id="btn-analyze" style="background:#16a34a;color:#fff;font-weight:700;" onclick="runAnalysis()">AI 위험도 분석</button>
   <button class="tb-btn tb-primary" onclick="window.print()">PDF 저장 / 인쇄</button>
 </div>
 <div class="spacer"></div>
+
+<!-- AI 분석 결과 패널 -->
+<div id="ai-panel" style="display:none;max-width:210mm;margin:0 auto 12px;padding:16px 20px;border-radius:12px;background:#1e293b;color:#fff;font-family:'Pretendard',sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.3);">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+    <span style="font-size:12px;opacity:.6;">보증금 시세 분석</span>
+    <span id="ai-badge" style="padding:3px 12px;border-radius:20px;font-weight:700;font-size:13px;"></span>
+    <span id="ai-meta" style="font-size:12px;opacity:.6;margin-left:auto;"></span>
+  </div>
+  <div id="ai-msg" style="font-size:14px;line-height:1.65;"></div>
+</div>
 
 <!-- ════════════ 1쪽 ════════════ -->
 <div class="page" id="p1">
@@ -603,6 +614,52 @@
   }
 
   window.addEventListener('load', loadAll);
+
+  async function runAnalysis() {
+    const btn = document.getElementById('btn-analyze');
+    btn.textContent = '분석 중...';
+    btn.disabled = true;
+
+    const ll = JSON.parse(localStorage.getItem('insure_landlord') || '{}');
+
+    try {
+      const resp = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address: (ll.address || '') + ' ' + (ll.address_detail || ''),
+          deposit: ll.deposit || '',
+          housing_type: ll.housing_type || '',
+        }),
+      });
+      if (!resp.ok) throw new Error('서버 오류');
+      const data = await resp.json();
+      showResult(data);
+    } catch (e) {
+      showResult({ riskLabel: '오류', riskColor: '#ef4444', message: '분석 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', medianDeposit: null, sampleCount: 0 });
+    } finally {
+      btn.textContent = 'AI 위험도 분석';
+      btn.disabled = false;
+    }
+  }
+
+  function showResult(d) {
+    const panel = document.getElementById('ai-panel');
+    const badge = document.getElementById('ai-badge');
+    const meta = document.getElementById('ai-meta');
+    const msg = document.getElementById('ai-msg');
+
+    panel.style.display = 'block';
+    badge.textContent = d.riskLabel || '-';
+    badge.style.background = d.riskColor || '#64748b';
+    badge.style.color = '#fff';
+
+    meta.textContent = d.medianDeposit
+      ? `지역 중앙값 ${Number(d.medianDeposit).toLocaleString()}만원 · ${d.sampleCount}건`
+      : '';
+    msg.textContent = d.message || '';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 </script>
 </body>
 </html>
