@@ -370,7 +370,7 @@
             </div>
           </div>
           <p style="font-size:12px;font-weight:700;color:#8B95A1;margin:0 0 8px;">초대 링크</p>
-          <div class="link-box">https://insure-app.kr/contract/ABC-2024-0312</div>
+          <div class="link-box" id="invite-link">링크 생성 중...</div>
           <div class="btn-row">
             <button class="btn-secondary sm" onclick="copyLink()">링크 복사</button>
             <button class="btn-yellow sm" onclick="shareKakao()">카카오 공유</button>
@@ -604,6 +604,49 @@
         if (!sub || !chip) continue;
         sub.style.display = i === n ? 'block' : 'none';
         chip.className = 'step-chip ' + (i < n ? 'done' : i === n ? 'active' : 'inactive');
+      }
+      if (n === 4) saveToSupabase();
+    }
+
+    async function saveToSupabase() {
+      const linkEl = document.getElementById('invite-link');
+      linkEl.textContent = '링크 생성 중...';
+      const data = {
+        ll_name: g('ll_name'), ll_id_num: g('ll_id_num'), ll_phone: g('ll_phone'), ll_reg_no: g('ll_reg_no'),
+        ll_address: g('ll_address'), ll_address_detail: g('ll_address_detail'),
+        ll_housing_type: g('ll_housing_type'), ll_area: g('ll_area'),
+        ll_floor: g('ll_floor'), ll_total_floor: g('ll_total_floor'),
+        ll_deposit: g('ll_deposit'), ll_monthly_rent: g('ll_monthly_rent'), ll_mgmt_fee: g('ll_mgmt_fee'),
+        ll_start_date: g('ll_start_date'), ll_end_date: g('ll_end_date'), ll_payment_day: g('ll_payment_day'),
+        ll_tenant_name: g('ll_tenant_name'), ll_tenant_phone: g('ll_tenant_phone'),
+        contract_type: currentType || 'A',
+      };
+      localStorage.setItem('insure_landlord', JSON.stringify({
+        name: data.ll_name, id_num: data.ll_id_num, phone: data.ll_phone, reg_no: data.ll_reg_no,
+        address: data.ll_address, address_detail: data.ll_address_detail,
+        housing_type: data.ll_housing_type, area: data.ll_area,
+        floor: data.ll_floor, total_floor: data.ll_total_floor,
+        deposit: data.ll_deposit, monthly_rent: data.ll_monthly_rent, mgmt_fee: data.ll_mgmt_fee,
+        start_date: data.ll_start_date, end_date: data.ll_end_date, payment_day: data.ll_payment_day,
+        tenant_name: data.ll_tenant_name, tenant_phone: data.ll_tenant_phone,
+        contract_type: data.contract_type,
+      }));
+      try {
+        const resp = await fetch('/api/contract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const contract = await resp.json();
+        if (contract && contract.id) {
+          const link = `${location.origin}/tenant.html?id=${contract.id}`;
+          linkEl.textContent = link;
+          localStorage.setItem('insure_contract_id', contract.id);
+        } else {
+          linkEl.textContent = '링크 생성 실패 — Supabase 설정을 확인하세요';
+        }
+      } catch (e) {
+        linkEl.textContent = '링크 생성 실패 — 네트워크 오류';
       }
     }
 

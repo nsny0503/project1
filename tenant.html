@@ -457,6 +457,29 @@
   <script>
     const stepNames = ['', '계약 확인', '내 정보 입력', '계약 조건 확인', '특약 확인', '전자서명'];
     let cur = 2;
+    let contractId = new URLSearchParams(location.search).get('id');
+
+    // Supabase에서 집주인 데이터 불러오기
+    if (contractId) {
+      fetch(`/api/contract?id=${contractId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data) return;
+          // localStorage 형식으로 변환하여 저장
+          localStorage.setItem('insure_landlord', JSON.stringify({
+            name: data.ll_name, id_num: data.ll_id_num, phone: data.ll_phone, reg_no: data.ll_reg_no,
+            address: data.ll_address, address_detail: data.ll_address_detail,
+            housing_type: data.ll_housing_type, area: data.ll_area,
+            floor: data.ll_floor, total_floor: data.ll_total_floor,
+            deposit: data.ll_deposit, monthly_rent: data.ll_monthly_rent, mgmt_fee: data.ll_mgmt_fee,
+            start_date: data.ll_start_date, end_date: data.ll_end_date, payment_day: data.ll_payment_day,
+            tenant_name: data.ll_tenant_name, tenant_phone: data.ll_tenant_phone,
+            contract_type: data.contract_type,
+          }));
+          localStorage.setItem('insure_contract_id', contractId);
+        })
+        .catch(() => {});
+    }
 
     function goTo(n) {
       document.getElementById('screen' + cur).classList.remove('active');
@@ -517,6 +540,19 @@
         alert('계약 동의 체크박스를 체크해 주세요.'); return;
       }
       saveTenantData();
+      // Supabase에 세입자 데이터 저장
+      const cid = contractId || localStorage.getItem('insure_contract_id');
+      if (cid) {
+        fetch(`/api/contract?id=${cid}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tt_name: gv('tt_name'), tt_nationality: gv('tt_nationality'),
+            tt_id_num: gv('tt_id_num'), tt_phone: gv('tt_phone'),
+            tt_visa_type: gv('tt_visa_type'), tt_signed: true,
+          }),
+        }).catch(() => {});
+      }
       goTo(6);
       runAiAnalysis();
     }
