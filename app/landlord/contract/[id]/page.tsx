@@ -273,7 +273,7 @@ export default function LandlordContractDetailPage() {
             <p className="text-sm text-[#6B7684]">{contract.ll_address_detail}</p>
           </div>
           <StatusTag
-            status={status}
+            label={status}
             color={status === '완료' ? 'green' : status === '서명대기' ? 'yellow' : 'blue'}
           />
         </div>
