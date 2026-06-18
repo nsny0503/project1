@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const LAWD_MAP: Record<string, string> = {
-  '종로구':'11110','용산구':'11170','성동구':'11200','광진구':'11215',
+  '종로구':'11110','중구':'11140','용산구':'11170','성동구':'11200','광진구':'11215',
   '동대문구':'11230','중랑구':'11260','성북구':'11290','강북구':'11305',
   '도봉구':'11320','노원구':'11350','은평구':'11380','서대문구':'11410',
   '마포구':'11440','양천구':'11470','강서구':'11500','구로구':'11530',
@@ -26,6 +26,8 @@ const LAWD_MAP: Record<string, string> = {
   '구리시':'41310','남양주시':'41360','시흥시':'41390','군포시':'41410',
   '하남시':'41450','용인처인구':'41461','용인기흥구':'41463','용인수지구':'41465',
   '파주시':'41480','화성시':'41590','안산단원구':'41273','안산상록구':'41271',
+  '오산시':'41370','안성시':'41550','평택시':'41220','김포시':'41570',
+  '양주시':'41630','구리시':'41310','동두천시':'41250',
 }
 
 function extractLawdCd(address: string): string | null {
@@ -34,10 +36,9 @@ function extractLawdCd(address: string): string | null {
   for (const key of sorted) {
     if (address.includes(key)) return LAWD_MAP[key]
   }
-  const shortMatch = address.match(/([가-힣]{2,4})(구)?/g) || []
-  for (const m of shortMatch) {
-    const candidate = m.endsWith('구') ? m : m + '구'
-    if (LAWD_MAP[candidate]) return LAWD_MAP[candidate]
+  const matches = address.match(/([가-힣]{2,5}(?:구|시|군))/g) || []
+  for (const m of matches) {
+    if (LAWD_MAP[m]) return LAWD_MAP[m]
   }
   return null
 }
@@ -81,7 +82,9 @@ function parseWon(v: string | undefined): number {
 
 function calcMarket(deposit: string, transactions: Record<string, string>[]) {
   const dep = parseWon(deposit)
-  const deposits = transactions.map(t => parseWon(t['deposit']) * 10000).filter(v => v > 0)
+  const deposits = transactions
+    .map(t => (parseWon(t['deposit'] || t['보증금'] || t['depositAmount']) * 10000))
+    .filter(v => v > 0)
   if (!deposits.length) return { dep, median: 0, medManWon: 0, ratio: null as number | null, sampleCount: 0 }
   deposits.sort((a, b) => a - b)
   const median = deposits[Math.floor(deposits.length / 2)]
@@ -105,7 +108,10 @@ export async function POST(request: NextRequest) {
         const endpoint = getEndpoint(housing_type)
         await Promise.allSettled(
           months.map(ym =>
-            fetch(`https://apis.data.go.kr/1613000/${endpoint}?LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&serviceKey=${dataKey}&numOfRows=100`, { signal: AbortSignal.timeout(8000) })
+            fetch(
+              `https://apis.data.go.kr/1613000/${endpoint}?LAWD_CD=${lawdCd}&DEAL_YMD=${ym}&serviceKey=${encodeURIComponent(dataKey)}&numOfRows=100`,
+              { signal: AbortSignal.timeout(8000) }
+            )
               .then(r => r.text())
               .then(xml => { transactions.push(...parseXml(xml)) })
               .catch(() => {})
@@ -115,41 +121,77 @@ export async function POST(request: NextRequest) {
     }
 
     const mkt = calcMarket(deposit, transactions)
-    let risk = 'unknown', riskLabel = '확인필요', message = '해당 지역 실거래 데이터를 찾을 수 없습니다. 직접 시세를 확인해 주세요.'
+    const depManWon = Math.round(mkt.dep / 10000)
     const riskColorMap: Record<string, string> = { safe: '#22c55e', warn: '#f59e0b', danger: '#ef4444', unknown: '#64748b' }
 
-    if (claudeKey) {
-      const depManWon = Math.round(mkt.dep / 10000)
-      const prompt = `당신은 한국 임대차 계약 리스크 분석 전문가입니다.\n아래 계약 정보를 분석하고 JSON만 반환하세요.\n\n계약 정보:\n- 주소: ${address}\n- 주택 유형: ${housing_type || '미입력'}\n- 보증금: ${depManWon > 0 ? depManWon.toLocaleString() + '만원' : '미입력'}\n- 지역 최근 거래 중앙값: ${mkt.medManWon > 0 ? mkt.medManWon.toLocaleString() + '만원 (' + mkt.sampleCount + '건)' : '데이터 없음'}\n- 보증금/중앙값 비율: ${mkt.ratio !== null ? mkt.ratio + '%' : '산출 불가'}\n\n반환 형식 (JSON):\n{"risk":"safe|warn|danger|unknown","riskLabel":"안전|주의|고위험|확인필요","message":"한국어로 2-3문장."}`
-      try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: { 'x-api-key': claudeKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-          body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] }),
-          signal: AbortSignal.timeout(15000),
-        })
-        const data = await res.json()
-        const text = data.content?.[0]?.text || ''
-        const jsonMatch = text.match(/\{[\s\S]*?\}/)
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0])
-          risk = parsed.risk; riskLabel = parsed.riskLabel; message = parsed.message
-        } else throw new Error('no json')
-      } catch {
-        // fallback to rule-based
-        if (mkt.ratio !== null) {
-          if (mkt.ratio <= 110) { risk = 'safe'; riskLabel = '안전'; message = `지역 중앙값(${mkt.medManWon.toLocaleString()}만원) 대비 ${mkt.ratio}% 수준입니다.` }
-          else if (mkt.ratio <= 130) { risk = 'warn'; riskLabel = '주의'; message = `보증금이 지역 중앙값 대비 ${mkt.ratio}%입니다. 등기부등본 선순위 채권을 반드시 확인하세요.` }
-          else { risk = 'danger'; riskLabel = '고위험'; message = `보증금이 지역 중앙값 대비 ${mkt.ratio}%로 현저히 높습니다. 전문가 검토를 권합니다.` }
-        }
+    if (!claudeKey) {
+      // Rule-based fallback
+      if (depManWon === 0) {
+        return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: null, risk: 'unknown', riskLabel: '확인필요', riskColor: '#64748b', message: '보증금 정보가 없어 분석할 수 없습니다.' })
       }
-    } else if (mkt.ratio !== null) {
-      if (mkt.ratio <= 110) { risk = 'safe'; riskLabel = '안전'; message = `지역 중앙값(${mkt.medManWon.toLocaleString()}만원) 대비 ${mkt.ratio}% 수준입니다.` }
-      else if (mkt.ratio <= 130) { risk = 'warn'; riskLabel = '주의'; message = `보증금이 지역 중앙값 대비 ${mkt.ratio}%입니다. 등기부등본 선순위 채권을 반드시 확인하세요.` }
-      else { risk = 'danger'; riskLabel = '고위험'; message = `보증금이 지역 중앙값 대비 ${mkt.ratio}%로 현저히 높습니다.` }
+      if (mkt.ratio !== null) {
+        if (mkt.ratio <= 110) return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk: 'safe', riskLabel: '안전', riskColor: '#22c55e', message: `지역 중앙값(${mkt.medManWon.toLocaleString()}만원) 대비 ${mkt.ratio}% 수준으로 적정 범위입니다.` })
+        if (mkt.ratio <= 130) return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk: 'warn', riskLabel: '주의', riskColor: '#f59e0b', message: `보증금이 지역 중앙값 대비 ${mkt.ratio}%입니다. 등기부등본 선순위 채권을 반드시 확인하세요.` })
+        return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk: 'danger', riskLabel: '고위험', riskColor: '#ef4444', message: `보증금이 지역 중앙값 대비 ${mkt.ratio}%로 현저히 높습니다. 전문가 상담을 강력 권합니다.` })
+      }
+      return NextResponse.json({ lawdCd, medianDeposit: 0, sampleCount: 0, ratio: null, risk: 'warn', riskLabel: '확인필요', riskColor: '#f59e0b', message: '실거래가 데이터를 찾지 못했습니다. 국토교통부 실거래가 공개시스템(rt.molit.go.kr)에서 직접 시세를 확인하세요.' })
     }
 
-    return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk, riskLabel, riskColor: riskColorMap[risk] || '#64748b', message })
+    const marketInfo = mkt.sampleCount > 0
+      ? `최근 3개월 ${mkt.sampleCount}건 거래 중앙값: ${mkt.medManWon.toLocaleString()}만원, 보증금/중앙값 비율: ${mkt.ratio}%`
+      : '실거래가 API 데이터 없음 (AI 지식 기반 판단)'
+
+    const prompt = `당신은 한국 주택임대차 보증금 위험도 분석 전문가입니다. 외국인 임차인을 위한 분석을 진행합니다.
+
+계약 정보:
+- 주소: ${address || '미입력'}
+- 주택 유형: ${housing_type || '미입력'}
+- 보증금: ${depManWon > 0 ? depManWon.toLocaleString() + '만원' : '미입력 (0원)'}
+- 실거래가 데이터: ${marketInfo}
+
+분석 기준:
+1. 실거래가 데이터가 있으면 중앙값 비율로 판단 (110% 이하 safe, 130% 이하 warn, 초과 danger)
+2. 데이터가 없으면 주소(지역)와 보증금을 기반으로 AI 지식으로 판단
+   - 강남/서초/용산/성동 오피스텔 1억~3억 → 일반적 범위
+   - 강남 빌라 전세 3억 이하 → 주의 (전세사기 위험 지역)
+   - 경기/인천 1억 이하 → 지역에 따라 safe~warn
+3. 보증금 0원 또는 미입력은 unknown 반환
+4. 외국인 임차인 특성: 전입신고와 확정일자가 특히 중요함을 언급
+
+반환 형식 (JSON만, 다른 텍스트 없음):
+{"risk":"safe|warn|danger|unknown","riskLabel":"안전|주의|고위험|확인필요","message":"한국어 2-3문장. 이 지역/보증금 수준에 대한 구체적 조언 포함."}`
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': claudeKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] }),
+        signal: AbortSignal.timeout(15000),
+      })
+      const data = await res.json()
+      const text = data.content?.[0]?.text || ''
+      const jsonMatch = text.match(/\{[\s\S]*?\}/)
+      if (!jsonMatch) throw new Error('no json')
+      const parsed = JSON.parse(jsonMatch[0])
+      return NextResponse.json({
+        lawdCd,
+        medianDeposit: mkt.medManWon,
+        sampleCount: mkt.sampleCount,
+        ratio: mkt.ratio,
+        risk: parsed.risk,
+        riskLabel: parsed.riskLabel,
+        riskColor: riskColorMap[parsed.risk] || '#64748b',
+        message: parsed.message
+      })
+    } catch {
+      // Rule-based fallback when Claude fails
+      if (mkt.ratio !== null) {
+        if (mkt.ratio <= 110) return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk: 'safe', riskLabel: '안전', riskColor: '#22c55e', message: `지역 중앙값(${mkt.medManWon.toLocaleString()}만원) 대비 ${mkt.ratio}% 수준입니다.` })
+        if (mkt.ratio <= 130) return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk: 'warn', riskLabel: '주의', riskColor: '#f59e0b', message: `보증금이 지역 중앙값 대비 ${mkt.ratio}%입니다. 등기부등본 선순위 채권을 확인하세요.` })
+        return NextResponse.json({ lawdCd, medianDeposit: mkt.medManWon, sampleCount: mkt.sampleCount, ratio: mkt.ratio, risk: 'danger', riskLabel: '고위험', riskColor: '#ef4444', message: `보증금이 지역 중앙값 대비 ${mkt.ratio}%로 현저히 높습니다.` })
+      }
+      return NextResponse.json({ lawdCd, medianDeposit: 0, sampleCount: 0, ratio: null, risk: 'warn', riskLabel: '확인필요', riskColor: '#f59e0b', message: '실거래가 시스템에서 데이터를 가져오지 못했습니다. 국토교통부 실거래가 공개시스템(rt.molit.go.kr)에서 직접 시세를 확인해 주세요.' })
+    }
   } catch {
     return NextResponse.json({ risk: 'unknown', riskLabel: '확인필요', message: '분석 중 오류가 발생했습니다.', medianDeposit: 0, sampleCount: 0, ratio: null, riskColor: '#64748b' })
   }
