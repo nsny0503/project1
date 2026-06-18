@@ -18,6 +18,8 @@ export default function LandlordContractDetailPage() {
   const [respondingId, setRespondingId] = useState<string | null>(null)
   const [editedClause, setEditedClause] = useState('')
   const [hasSignature, setHasSignature] = useState(false)
+  const [modifyNotifDismissed, setModifyNotifDismissed] = useState(false)
+  const prevTtSigned = useRef<boolean | null>(null)
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isDrawing = useRef(false)
@@ -28,7 +30,10 @@ export default function LandlordContractDetailPage() {
       .select('*')
       .eq('id', id)
       .single()
-    if (contractData) setContract(contractData)
+    if (contractData) {
+      prevTtSigned.current = contractData.tt_signed
+      setContract(contractData)
+    }
 
     const { data: requestsData } = await supabase
       .from('clause_requests')
@@ -61,7 +66,15 @@ export default function LandlordContractDetailPage() {
         table: 'contracts',
         filter: `id=eq.${id}`,
       }, (payload) => {
-        if (payload.new) setContract(payload.new as Contract)
+        const updated = payload.new as Contract
+        if (updated) {
+          // Detect signature reset: was signed, now unsigned
+          if (prevTtSigned.current === true && updated.tt_signed === false) {
+            setModifyNotifDismissed(false)
+          }
+          prevTtSigned.current = updated.tt_signed
+          setContract(updated)
+        }
       })
       .subscribe()
 
@@ -244,7 +257,9 @@ export default function LandlordContractDetailPage() {
     {
       label: '임차인 서명',
       done: contract.tt_signed,
-      subtitle: contract.tt_signed_at
+      subtitle: contract.tt_signed_at && !contract.tt_signed
+        ? '수정 요청으로 재서명 필요'
+        : contract.tt_signed_at
         ? new Date(contract.tt_signed_at).toLocaleDateString('ko-KR')
         : '대기 중...',
     },
@@ -284,18 +299,23 @@ export default function LandlordContractDetailPage() {
           {steps.map((step, index) => {
             const prevDone = index === 0 ? true : steps[index - 1].done
             const isActive = !step.done && prevDone
+            const isResetStep = index === 6 && contract.tt_signed_at && !contract.tt_signed
             return (
               <div key={index} className="flex items-start gap-3 mb-3 last:mb-0">
                 <div
                   className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-                    step.done
+                    isResetStep
+                      ? 'border-2 border-[#F59E0B] bg-[#FFFBEB]'
+                      : step.done
                       ? 'bg-[#00B493] text-white text-xs'
                       : isActive
                       ? 'border-2 border-[#F59E0B] bg-[#FFFBEB]'
                       : 'bg-[#F2F4F6] text-[#8B95A1] text-xs'
                   }`}
                 >
-                  {step.done ? (
+                  {isResetStep ? (
+                    <span className="text-xs text-[#F59E0B] font-bold">!</span>
+                  ) : step.done ? (
                     <span className="text-xs">✓</span>
                   ) : isActive ? (
                     <span className="w-2 h-2 bg-[#F59E0B] rounded-full animate-pulse" />
@@ -304,13 +324,38 @@ export default function LandlordContractDetailPage() {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#191F28]">{step.label}</p>
-                  <p className="text-xs text-[#8B95A1] mt-0.5">{step.subtitle}</p>
+                  <p className={`text-sm font-semibold ${isResetStep ? 'text-[#92400E]' : 'text-[#191F28]'}`}>{step.label}</p>
+                  <p className={`text-xs mt-0.5 ${isResetStep ? 'text-[#D97706] font-semibold' : 'text-[#8B95A1]'}`}>{step.subtitle}</p>
                 </div>
               </div>
             )
           })}
         </div>
+
+        {/* Signature reset notification */}
+        {contract.tt_signed_at && !contract.tt_signed && !modifyNotifDismissed && (
+          <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-2xl p-4 mb-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✏️</span>
+                <div>
+                  <p className="text-sm font-bold text-[#92400E]">임차인이 계약 수정을 요청했습니다</p>
+                  <p className="text-xs text-[#B45309] mt-0.5">임차인 서명이 초기화되었습니다. 임차인과 수정 내용을 협의한 뒤 재서명을 진행하세요.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setModifyNotifDismissed(true)}
+                className="text-[#B45309] text-lg leading-none flex-shrink-0 mt-0.5"
+              >
+                ×
+              </button>
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-xs text-[#92400E]">
+              <span className="font-semibold">다음 단계:</span>
+              <span>특약 수정 요청(아래) 처리 → 임차인 재서명 대기</span>
+            </div>
+          </div>
+        )}
 
         {/* Modification requests */}
         {pendingReqs.length > 0 && (
@@ -389,7 +434,14 @@ export default function LandlordContractDetailPage() {
         </div>
 
         {/* Landlord signature section */}
-        {!contract.tt_signed && (
+        {!contract.tt_signed && contract.tt_signed_at && (
+          // Modification requested state
+          <div className="bg-[#FFFBEB] rounded-2xl border border-[#FEF3C7] p-4 mb-4 text-center">
+            <p className="text-sm font-semibold text-[#92400E]">임차인 재서명 대기 중</p>
+            <p className="text-xs text-[#B45309] mt-1">임차인이 수정 내용을 확인하고 다시 서명하면 이 화면에서 최종 서명할 수 있습니다.</p>
+          </div>
+        )}
+        {!contract.tt_signed && !contract.tt_signed_at && (
           <div className="bg-[#F9FAFB] rounded-2xl border border-[#E8EAED] p-4 mb-4 text-center">
             <p className="text-sm text-[#8B95A1]">임차인 서명 완료 후 서명 가능합니다.</p>
           </div>
