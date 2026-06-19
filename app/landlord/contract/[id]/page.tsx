@@ -479,10 +479,11 @@ export default function LandlordContractDetailPage() {
             <button
               disabled={!hasSignature}
               onClick={async () => {
+                const signatureData = canvasRef.current?.toDataURL('image/png') || null
                 await fetch(`/api/contracts/${contract.id}`, {
                   method: 'PATCH',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ ll_signed: true, ll_signed_at: new Date().toISOString() }),
+                  body: JSON.stringify({ ll_signed: true, ll_signed_at: new Date().toISOString(), ll_signature: signatureData }),
                 })
               }}
               className="mt-4 bg-[#3182F6] text-white rounded-2xl py-4 w-full font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed"

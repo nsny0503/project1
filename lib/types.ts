@@ -37,8 +37,10 @@ interface Contract {
   tt_visa_type?: string
   tt_signed: boolean
   tt_signed_at?: string
+  tt_signature?: string
   ll_signed: boolean
   ll_signed_at?: string
+  ll_signature?: string
 }
 
 interface ClauseRequest {
